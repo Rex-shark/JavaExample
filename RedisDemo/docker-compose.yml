@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: my-redis-c
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "123456"]
+    restart: unless-stopped
+
+  redisdemo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # 預設 JAR 檔名，可用 --build-arg 覆蓋
+        JAR_FILE: target/RedisDemo-0.0.1-SNAPSHOT.jar
+    container_name: redis-demo-app
+    ports:
+      - "8080:8080"
+    environment:
+      # 對應 Spring Boot properties (relaxed binding)
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: '6379'
+      SPRING_DATA_REDIS_PASSWORD: '123456'
+      SPRING_DATA_REDIS_DATABASE: '0'
+    depends_on:
+      - redis
+    restart: unless-stopped
+

@@ -1,0 +1,43 @@
+###set
+POST http://localhost:8080/redis/set
+Content-Type: application/json
+
+{
+  "key": "K2",
+  "value": "V2"
+}
+
+
+
+###get
+POST http://localhost:8080/redis/get
+Content-Type: application/json
+
+{
+  "key": "K2",
+  "value": ""
+}
+
+###all
+POST http://localhost:8080/redis/all
+
+
+
+###delete
+POST http://localhost:8080/redis/delete
+Content-Type: application/json
+
+{
+  "key": "K2",
+  "value": ""
+}
+
+###exists
+POST http://localhost:8080/redis/exists
+Content-Type: application/json
+
+{
+  "key": "K2",
+  "value": ""
+}
+
