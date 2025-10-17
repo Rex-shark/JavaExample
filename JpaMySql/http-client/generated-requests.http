@@ -1,0 +1,34 @@
+###取得users
+GET http://localhost:8080/users
+
+
+###新增user
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "account": "Rex2",
+  "password": "secret",
+  "remark": "備註",
+  "createdUserId": 1
+}
+
+
+
+###取得user by uuid
+GET http://localhost:8080/users/d4f20dbf-f0a5-4742-be0e-4b95d075a93d
+
+
+###更新user
+PUT http://localhost:8080/users/d4f20dbf-f0a5-4742-be0e-4b95d075a93d
+Content-Type: application/json
+
+{
+  "account": "Rex2",
+  "password": "secret",
+  "remark": "備註123",
+  "createdUserId": 1
+}
+
+###DELETE user by uuid
+DELETE http://localhost:8080/users/d4f20dbf-f0a5-4742-be0e-4b95d075a93d

@@ -1,2 +1,2 @@
 - 不要用任何 CLI 或命令列指令，例如 Maven、Gradle 或 javac
-- 專要撰寫TEST但不需要執行測試
+- 不專要撰寫TEST，不需要執行測試
