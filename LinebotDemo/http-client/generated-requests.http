@@ -1,0 +1,3 @@
+###根據USER_ID取得使用者個人檔案
+GET https://api.line.me/v2/bot/profile/{}}
+Authorization: Bearer {}
