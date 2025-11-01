@@ -1,0 +1,15 @@
+###根據USER_ID取得使用者個人檔案
+GET https://api.line.me/v2/bot/profile/{{lineBotUserIdRex}}
+Authorization: Bearer {{lineBotBearer}}
+
+###抓linebot的好友列表
+GET https://api.line.me/v2/bot/followers/ids
+Authorization: Bearer {{lineBotBearer}}
+
+###抓linebot的好友列表
+GET https://api.line.me/v2/bot/followers/ids?start=&limit=200
+Authorization: Bearer {{lineBotBearer}}
+
+###帳號測試
+GET https://api.line.me/v2/bot/info
+Authorization: Bearer {{lineBotBearer}}
