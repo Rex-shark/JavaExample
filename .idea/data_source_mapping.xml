@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/DockerDemo/sql-console/console.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
+    <file url="file://$PROJECT_DIR$/JpaMySql/sql-console/console.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
+  </component>
+</project>

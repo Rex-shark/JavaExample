@@ -1,0 +1,11 @@
+services:
+  game-demo1:
+    build: .
+    image: game-demo1:latest
+    container_name: game-demo1
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+

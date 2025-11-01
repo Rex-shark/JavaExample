@@ -1,0 +1,7 @@
+###hello word
+GET http://localhost:3000/api/move?dir=up
+
+
+###hello word
+GET http://localhost:3000/api/next-move?dir=up
+

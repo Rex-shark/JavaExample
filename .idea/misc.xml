@@ -9,6 +9,9 @@
         <option value="$PROJECT_DIR$/RedisDemo/pom.xml" />
         <option value="$PROJECT_DIR$/JpaMySql/pom.xml" />
         <option value="$PROJECT_DIR$/LinebotDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/DockerDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/WebSocketDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/LinebotGame1/pom.xml" />
       </list>
     </option>
   </component>

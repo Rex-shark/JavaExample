@@ -1,0 +1,6 @@
+- 安裝
+  - winget install Microsoft.devtunnel
+- 登入github帳號
+  - devtunnel user login -g
+- 建立隧道
+  -  devtunnel host -p 8080 --allow-anonymous

@@ -1,11 +1,11 @@
 package com.rex.linebotdemo.handler;
 
 
+
 import com.linecorp.bot.client.base.Result;
 import com.linecorp.bot.messaging.client.MessagingApiClient;
-import com.linecorp.bot.messaging.model.Message;
-import com.linecorp.bot.messaging.model.TextMessage;
-import com.linecorp.bot.messaging.model.UserProfileResponse;
+import com.linecorp.bot.messaging.model.*;
+
 import com.linecorp.bot.spring.boot.handler.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.handler.annotation.LineMessageHandler;
 import com.linecorp.bot.webhook.model.*;
@@ -14,7 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 
 @Slf4j
@@ -32,6 +38,9 @@ public class LinebotHandler {
 
         System.out.println("handleTextMessageEvent");
         System.out.println("event = " + event);
+
+
+
         String userId = null;
         Source source = event.source();
         AtomicReference<String> originalMessageText = new AtomicReference<>();
@@ -78,7 +87,7 @@ public class LinebotHandler {
                 .apiEndPoint(URI.create("https://api.line.me/")) // 可省略，預設就是這個
                 .build();
 
-        Result<UserProfileResponse> result = client.getProfile(userId).join();
+
 
         // 呼叫 getProfile 取得使用者資料
         client.getProfile(userId)
@@ -108,6 +117,10 @@ public class LinebotHandler {
         if (originalMessageText.get() == null || originalMessageText.get().isEmpty()) {
             return this.getRandomResponse(); // 如果沒有回應內容，則不發送任何消息
         }
+
+
+
+
 
         return new TextMessage(originalMessageText.get());
         //新模組 單人
@@ -142,7 +155,7 @@ public class LinebotHandler {
 
     @EventMapping
     public void handleDefaultMessageEvent(Event event) {
-        //System.out.println("b event: " + event);
+        System.out.println("handleDefaultMessageEvent: " + event);
     }
 
     //臨時性設計 隨機回應文字
