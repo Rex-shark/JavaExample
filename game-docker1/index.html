@@ -1,0 +1,104 @@
+<!doctype html>
+<html class="no-js" lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>使用者 CRUD 教學 (前端: game-docker1, 後端: DockerDemo:8080)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="一個簡單的使用者 CRUD 教學頁面，呼叫 DockerDemo 模組的 /users API。">
+
+  <meta property="og:title" content="使用者 CRUD 教學">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:5173/">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <header class="container">
+    <h1>使用者 CRUD 教學</h1>
+    <p class="muted">前端模組：game-docker1（本頁），後端 API 來自 DockerDemo 的 <code>/users</code>（http://localhost:8080）。</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2 id="form-title">建立使用者</h2>
+      <form id="user-form">
+        <div class="grid">
+          <div class="form-control">
+            <label for="uuid">UUID（更新模式顯示）</label>
+            <input type="text" id="uuid" name="uuid" placeholder="自動產生" readonly>
+          </div>
+          <div class="form-control">
+            <label for="account">帳號</label>
+            <input type="text" id="account" name="account" required minlength="6" maxlength="100" placeholder="至少 6 碼">
+          </div>
+          <div class="form-control">
+            <label for="password">密碼</label>
+            <input type="password" id="password" name="password" required maxlength="100">
+          </div>
+          <div class="form-control">
+            <label for="remark">備註</label>
+            <input type="text" id="remark" name="remark" maxlength="255">
+          </div>
+          <div class="form-control">
+            <label for="createdUserId">建立者 ID</label>
+            <input type="number" id="createdUserId" name="createdUserId" min="1" step="1" value="1">
+          </div>
+          <div class="form-control">
+            <label for="updateUserId">更新者 ID（更新時使用）</label>
+            <input type="number" id="updateUserId" name="updateUserId" min="1" step="1" value="1">
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" id="submit-btn">新增</button>
+          <button type="button" id="reset-btn" class="secondary">清除</button>
+          <button type="button" id="cancel-update-btn" class="link hidden">取消更新</button>
+        </div>
+      </form>
+      <p id="status" class="status"></p>
+    </section>
+
+    <section class="card">
+      <div class="flex-between">
+        <h2>使用者列表</h2>
+        <button type="button" id="refresh-btn" class="secondary">重新整理</button>
+      </div>
+      <div class="table-wrap">
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th>UUID</th>
+              <th>帳號</th>
+              <th>備註</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 由 JS 動態產生資料列 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container small muted">
+    <p>教學說明：
+      <br>1. 直接在上方表單輸入資料按「新增」會呼叫 <code>POST http://localhost:8080/users</code>。
+      <br>2. 點選資料列的「編輯」會帶入欄位至表單，儲存時呼叫 <code>PUT /users/{uuid}</code>。
+      <br>3. 點選「刪除」會呼叫 <code>DELETE /users/{uuid}</code>。
+    </p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
