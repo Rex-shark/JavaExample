@@ -4,6 +4,7 @@ package com.rex.dockerdemo.controller;
 import com.rex.dockerdemo.entity.UserBase;
 import com.rex.dockerdemo.request.UserRequest;
 import com.rex.dockerdemo.service.UserService;
+import com.rex.dockerdemo.response.ApiResponse;
 import jakarta.annotation.Resource;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:5173", "http://localhost:3000"})
 @SuppressWarnings("unused")
 @RestController
 @RequestMapping("/users")
@@ -24,48 +26,50 @@ public class UserController {
 
 
     @PostMapping
-    public ResponseEntity<UserBase> create(@RequestBody UserRequest user) {
+    public ResponseEntity<ApiResponse<UserBase>> create(@RequestBody UserRequest user) {
         UserBase created = userService.create(user.toEntity() );
 
         // 回傳 201 與建立好的物件
-        return ResponseEntity.created(URI.create("/users/" + created.getUuid())).body(created);
+        return ResponseEntity.created(URI.create("/users/" + created.getUuid()))
+                .body(ApiResponse.created(created));
 
     }
 
     @GetMapping
-    public ResponseEntity<List<UserBase>> list() {
-        return ResponseEntity.ok(userService.findAll());
+    public ResponseEntity<ApiResponse<List<UserBase>>> list() {
+        return ResponseEntity.ok(ApiResponse.ok(userService.findAll()));
     }
 
     @GetMapping("/{uuid}")
-    public ResponseEntity<UserBase> getByUuid(@PathVariable String uuid) {
+    public ResponseEntity<ApiResponse<UserBase>> getByUuid(@PathVariable String uuid) {
         return userService.findByUuid(uuid)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(u -> ResponseEntity.ok(ApiResponse.ok(u)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("user not found")));
     }
 
     @PutMapping("/{uuid}")
-    public ResponseEntity<UserBase> update(@PathVariable String uuid, @RequestBody UserBase user) {
+    public ResponseEntity<ApiResponse<UserBase>> update(@PathVariable String uuid, @RequestBody UserBase user) {
         try {
             UserBase updated = userService.update(uuid, user);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(ApiResponse.ok(updated));
         } catch (EntityNotFoundException ex) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("user not found"));
         }
     }
 
     @DeleteMapping("/{uuid}")
-    public ResponseEntity<Void> delete(@PathVariable String uuid) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String uuid) {
         try {
             userService.deleteByUuid(uuid);
-            return ResponseEntity.noContent().build();
+            // 回傳成功但無內容的 data
+            return ResponseEntity.ok(new ApiResponse<>(true, null, "deleted", null, 200));
         } catch (EntityNotFoundException ex) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("user not found"));
         }
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.badRequest(ex.getMessage()));
     }
 }

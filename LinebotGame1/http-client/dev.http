@@ -1,0 +1,5 @@
+###依照ID 發訊息 Rex
+PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdRex}}
+
+###依照ID 發訊息 Tina
+PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdTina}}

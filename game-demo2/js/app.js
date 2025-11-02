@@ -19,6 +19,17 @@
     return url.searchParams.get(key);
   }
 
+  // Escape HTML to prevent XSS when inserting dynamic text
+  function escapeHtml(s){
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // Clamp helper
   function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
@@ -87,7 +98,6 @@
       if (typeof payload === 'string') {
         try { obj = JSON.parse(payload); } catch(_) { /* not json */ }
       }
-
       // Determine command source precedence:
       // 1) JSON with dir field -> use that
       // 2) JSON with data field -> use that
@@ -128,16 +138,42 @@
 
   function appendChat(msgObj){
     if (!chatBody || !msgObj) return;
-    const { title, name, dir, text } = msgObj;
-    if (typeof title === 'string' && typeof name === 'string' && typeof dir === 'string'){
-      const item = document.createElement('div');
-      item.className = 'chat-msg';
-      const content = `${title}-${name}: ${dir} (${text ?? ''})`;
-      item.textContent = content;
-      chatBody.appendChild(item);
-      // autoscroll to bottom
-      chatBody.scrollTop = chatBody.scrollHeight;
+    const { title, name, dir, text, imageUrl } = msgObj;
+    if (typeof title !== 'string' || typeof name !== 'string' || typeof dir !== 'string') return;
+
+    const item = document.createElement('div');
+    item.className = 'chat-msg';
+
+    // avatar
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    if (typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+      // Use background-image for simple contain/cover fit
+      const safeUrl = imageUrl.replace(/"/g, '%22');
+      avatar.style.backgroundImage = `url("${safeUrl}")`;
+    } else {
+      avatar.classList.add('avatar--fallback');
+      avatar.textContent = (name && name.trim()) ? name.trim().charAt(0).toUpperCase() : '?';
     }
+
+    // message bubble/content
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    const header = document.createElement('div');
+    header.className = 'bubble-header';
+    header.innerHTML = `<strong>${escapeHtml(title)}-${escapeHtml(name)}</strong>`;
+    const body = document.createElement('div');
+    body.className = 'bubble-body';
+    body.innerHTML = `${escapeHtml(dir)}${text ? ` <small>(${escapeHtml(text)})</small>` : ''}`;
+
+    bubble.appendChild(header);
+    bubble.appendChild(body);
+
+    item.appendChild(avatar);
+    item.appendChild(bubble);
+
+    chatBody.appendChild(item);
+    chatBody.scrollTop = chatBody.scrollHeight;
   }
 
   // Debug panel: call /move API via dev proxy

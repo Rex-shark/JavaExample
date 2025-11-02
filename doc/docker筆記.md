@@ -11,9 +11,12 @@
 
 - docker run -itd --name mysql8_docker -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 -v /d/mydata:/var/lib/mysql mysql:8.0
 - UTC+8時區版本
-- docker run -itd --name mysql8-UTC8-c -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Taipei -p 3306:3306 -v /d/dockerMySqldata:/var/lib/mysql mysql:8.0
+  - docker run -itd --name mysql8-UTC8-c -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Taipei -p 3306:3306 -v /d/dockerMySqlData:/var/lib/mysql mysql:8.0
+- UTC+8時區版本 +  network 版本(docker-network)
+  - docker network create docker-network
+  - docker run -itd --name mysql8-UTC8-c --network docker-network -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Taipei -p 3306:3306 -v /d/dockerMySqlData:/var/lib/mysql mysql:8.0
 
-### mysql 啟動docker容器指令 持久化路徑放在~/mydata 適用nac
+### mysql 啟動docker容器指令 持久化路徑放在~/mydata 適用Mac
 
 - docker run -itd --name mysql8_docker -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 -v ~/mydata:/var/lib/mysql mysql:8.0
 
@@ -29,10 +32,10 @@
 ### 建立redis鏡像與容器
 
 1. docker pull redis:latest
-2. docker run --name my-redis -d redis:latest(這是錯誤的，沒有映射埠)
-3. docker run --name my-redis -d -p 6379:6379 redis:latest
-4. docker run --name my-redis -d -p 6379:6379 -e REDIS_PASSWORD=123456 redis:latest(有密碼版本，官方版本似乎無效改成下面的)
-5. docker run --name my-redis -d -p 6379:6379 redis:latest redis-server --requirepass 123456(有密碼版本，帳號名稱預設default)
+2. docker run --name my-redis-c -d redis:latest(這是錯誤的，沒有映射埠)
+3. docker run --name my-redis-c  -d -p 6379:6379 redis:latest
+4. docker run --name my-redis-c  -d -p 6379:6379 -e REDIS_PASSWORD=123456 redis:latest(有密碼版本，官方版本似乎無效改成下面的)
+5. docker run --name my-redis-c  -d -p 6379:6379 redis:latest redis-server --requirepass 123456(有密碼版本，帳號名稱預設default)
 
 
 ---

@@ -1,191 +1,178 @@
-// Simple tile-based map + player movement with arrow keys
+// Replaced game logic with a simple CRUD frontend that talks to DockerDemo's /users API
 (() => {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
+  const API_BASE = (window.GAME_API_BASE || 'http://localhost:8080') + '/users';
+  document.getElementById('apiBase').textContent = API_BASE;
 
-  const TILE_SIZE = 32; // pixels
-  const TILES = 16; // 16x16 => 512x512 canvas
-
-  // Simple map: 0 grass, 1 water, 2 tree/rock (block)
-  const map = Array.from({ length: TILES }, (_, y) =>
-    Array.from({ length: TILES }, (_, x) => {
-      // Create a simple pattern
-      if ((x + y) % 7 === 0) return 1; // water
-      if ((x * y) % 13 === 0) return 2; // obstacle
-      return 0; // grass
-    })
-  );
-
-  // Ensure spawn center is walkable
-  const start = { x: Math.floor(TILES / 2), y: Math.floor(TILES / 2) };
-  map[start.y][start.x] = 0;
-
-  const player = {
-    x: start.x,
-    y: start.y,
-    color: '#f59e0b',
+  const els = {
+    form: document.getElementById('userForm'),
+    account: document.getElementById('account'),
+    password: document.getElementById('password'),
+    remark: document.getElementById('remark'),
+    editingUuid: document.getElementById('editingUuid'),
+    submitBtn: document.getElementById('submitBtn'),
+    cancelBtn: document.getElementById('cancelBtn'),
+    notify: document.getElementById('notify'),
+    usersTbody: document.getElementById('usersTbody')
   };
 
-  function drawTile(x, y, type) {
-    switch (type) {
-      case 0: // grass
-        ctx.fillStyle = '#166534';
-        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        ctx.fillStyle = '#22c55e';
-        ctx.globalAlpha = 0.15;
-        ctx.fillRect(x * TILE_SIZE + 4, y * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-        ctx.globalAlpha = 1;
-        break;
-      case 1: // water
-        ctx.fillStyle = '#1d4ed8';
-        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        ctx.fillStyle = '#93c5fd';
-        ctx.globalAlpha = 0.15;
-        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE / 2, TILE_SIZE, TILE_SIZE / 2);
-        ctx.globalAlpha = 1;
-        break;
-      case 2: // obstacle
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        ctx.fillStyle = '#9ca3af';
-        ctx.globalAlpha = 0.2;
-        ctx.fillRect(x * TILE_SIZE + 6, y * TILE_SIZE + 6, TILE_SIZE - 12, TILE_SIZE - 12);
-        ctx.globalAlpha = 1;
-        break;
-    }
-
-    // grid lines for RPG feel
-    ctx.strokeStyle = 'rgba(0,0,0,.15)';
-    ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  function notify(msg, type = 'info') {
+    const cls = type === 'error' ? 'alert-danger' : (type === 'success' ? 'alert-success' : 'alert-secondary');
+    els.notify.innerHTML = `<div class="alert ${cls} p-2" role="alert">${escapeHtml(msg)}</div>`;
+    setTimeout(() => { if (els.notify.innerHTML.includes(msg)) els.notify.innerHTML = ''; }, 4000);
   }
 
-  function drawMap() {
-    for (let y = 0; y < TILES; y++) {
-      for (let x = 0; x < TILES; x++) {
-        drawTile(x, y, map[y][x]);
+  function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+  async function listUsers() {
+    try {
+      const res = await fetch(API_BASE);
+      if (!res.ok) throw new Error('取得 users 失敗: ' + res.status);
+      const data = await res.json();
+      renderList(data || []);
+    } catch (e) {
+      notify('無法取得使用者: ' + e.message, 'error');
+      console.error(e);
+    }
+  }
+
+  function renderList(users) {
+    els.usersTbody.innerHTML = '';
+    if (!users.length) {
+      els.usersTbody.innerHTML = '<tr><td colspan="4" class="text-center small-muted">無使用者資料</td></tr>';
+      return;
+    }
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="max-width:260px;word-break:break-all">${escapeHtml(u.uuid)}</td>
+        <td>${escapeHtml(u.account)}</td>
+        <td>${escapeHtml(u.remark || '')}</td>
+        <td>
+          <button class="btn btn-sm btn-light me-1" data-act="edit" data-uuid="${escapeHtml(u.uuid)}">編輯</button>
+          <button class="btn btn-sm btn-danger" data-act="del" data-uuid="${escapeHtml(u.uuid)}">刪除</button>
+        </td>
+      `;
+      els.usersTbody.appendChild(tr);
+    });
+  }
+
+  async function createUser(payload) {
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error('建立失敗: ' + res.status + ' ' + txt);
       }
+      const created = await res.json();
+      notify('建立成功', 'success');
+      resetForm();
+      listUsers();
+    } catch (e) {
+      notify(e.message, 'error');
     }
   }
 
-  function drawPlayer() {
-    const px = player.x * TILE_SIZE + TILE_SIZE / 2;
-    const py = player.y * TILE_SIZE + TILE_SIZE / 2;
-
-    // simple character as a circle with a face
-    ctx.fillStyle = player.color;
-    ctx.beginPath();
-    ctx.arc(px, py, TILE_SIZE * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    // eyes
-    ctx.fillStyle = '#111827';
-    ctx.beginPath();
-    ctx.arc(px - 5, py - 4, 3, 0, Math.PI * 2);
-    ctx.arc(px + 5, py - 4, 3, 0, Math.PI * 2);
-    ctx.fill();
-    // smile
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(px, py + 2, 8, 0, Math.PI);
-    ctx.stroke();
-  }
-
-  function canWalk(nx, ny) {
-    // 僅做邊界檢查，避免因障礙導致遠端 API 觸發卻看起來沒移動
-    return nx >= 0 && ny >= 0 && nx < TILES && ny < TILES;
-  }
-
-  function move(dx, dy) {
-    const nx = player.x + dx;
-    const ny = player.y + dy;
-    if (canWalk(nx, ny)) {
-      player.x = nx;
-      player.y = ny;
-      render();
+  async function updateUser(uuid, payload) {
+    try {
+      const res = await fetch(API_BASE + '/' + encodeURIComponent(uuid), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error('更新失敗: ' + res.status + ' ' + txt);
+      }
+      const updated = await res.json();
+      notify('更新成功', 'success');
+      resetForm();
+      listUsers();
+    } catch (e) {
+      notify(e.message, 'error');
     }
   }
 
-  function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMap();
-    drawPlayer();
+  async function deleteUser(uuid) {
+    if (!confirm('確定要刪除 ' + uuid + ' 嗎？')) return;
+    try {
+      const res = await fetch(API_BASE + '/' + encodeURIComponent(uuid), { method: 'DELETE' });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error('刪除失敗: ' + res.status + ' ' + txt);
+      }
+      notify('刪除成功', 'success');
+      listUsers();
+    } catch (e) {
+      notify(e.message, 'error');
+    }
   }
 
-  const keyMap = {
-    ArrowUp: [0, -1],
-    ArrowDown: [0, 1],
-    ArrowLeft: [-1, 0],
-    ArrowRight: [1, 0],
-    w: [0, -1],
-    s: [0, 1],
-    a: [-1, 0],
-    d: [1, 0]
-  };
+  function resetForm() {
+    els.editingUuid.value = '';
+    els.account.value = '';
+    els.password.value = '';
+    els.remark.value = '';
+    els.submitBtn.textContent = '建立';
+    els.cancelBtn.style.display = 'none';
+  }
 
-  window.addEventListener('keydown', (e) => {
-    const key = e.key;
-    if (keyMap[key]) {
-      e.preventDefault();
-      const [dx, dy] = keyMap[key];
-      move(dx, dy);
+  els.form.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const uuid = els.editingUuid.value && els.editingUuid.value.trim();
+    const account = els.account.value && els.account.value.trim();
+    const password = els.password.value && els.password.value.trim();
+    const remark = els.remark.value && els.remark.value.trim();
+
+    if (!account || account.length < 6) { notify('account 長度不足'); return; }
+
+    const payload = {
+      uuid: uuid || undefined,
+      account,
+      password: password || 'changeme',
+      remark: remark || undefined,
+      createdUserId: 1
+    };
+
+    if (uuid) {
+      updateUser(uuid, payload);
+    } else {
+      createUser(payload);
     }
   });
 
-  // --- WebSocket 連線到後端 WebSocketDemo ---
-  function connectWS() {
-    const params = new URLSearchParams(location.search);
-    const roomId = params.get('id') || 'default';
+  els.cancelBtn.addEventListener('click', resetForm);
 
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    // 允許以全域變數或 query 指定 WS 主機；否則在本地開發時(3000)預設連 8080
-    const qsBase = params.get('ws'); // 例如 ?ws=localhost:8080
-    const hintedBase = (typeof window !== 'undefined' && window.GAME_WS_BASE) ? String(window.GAME_WS_BASE) : null;
-    let host = qsBase || hintedBase || location.host;
-    if (!qsBase && !hintedBase && location.hostname === 'localhost' && location.port === '3000') {
-      host = 'localhost:8080';
+  els.usersTbody.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn) return;
+    const act = btn.getAttribute('data-act');
+    const uuid = btn.getAttribute('data-uuid');
+    if (act === 'edit') fetchUserToEdit(uuid);
+    else if (act === 'del') deleteUser(uuid);
+  });
+
+  async function fetchUserToEdit(uuid) {
+    try {
+      const res = await fetch(API_BASE + '/' + encodeURIComponent(uuid));
+      if (!res.ok) throw new Error('取得使用者失敗: ' + res.status);
+      const u = await res.json();
+      els.editingUuid.value = u.uuid;
+      els.account.value = u.account || '';
+      // 密碼不會回傳（JsonIgnore），前端留空表示不變或要改時再填
+      els.password.value = '';
+      els.remark.value = u.remark || '';
+      els.submitBtn.textContent = '更新';
+      els.cancelBtn.style.display = 'inline-block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      notify(e.message, 'error');
     }
-
-    const wsUrl = `${protocol}://${host}/ws/game?id=${encodeURIComponent(roomId)}`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      console.log('WS open', wsUrl);
-    };
-
-    ws.onmessage = (ev) => {
-      try {
-        const msg = JSON.parse(ev.data);
-        if (msg.type === 'move' && typeof msg.dx === 'number' && typeof msg.dy === 'number') {
-          console.debug('[WS] recv move', msg); // 調試用
-          move(msg.dx, msg.dy);
-        } else if (msg.type === 'message') {
-          console.log('room message:', msg);
-        } else if (msg.type === 'connected') {
-          console.log('connected to room', msg.room);
-        }
-      } catch (e) {
-        const t = String(ev.data || '').trim();
-        if (t.startsWith('{') && t.includes('"type"') && t.includes('"move"')) {
-          try {
-            const obj = JSON.parse(t);
-            console.debug('[WS] recv move(text)', obj); // 調試用
-            if (obj && obj.type === 'move') move(+obj.dx || 0, +obj.dy || 0);
-          } catch {}
-        }
-      }
-    };
-
-    ws.onclose = () => {
-      console.warn('WS closed, retry in 1s');
-      setTimeout(connectWS, 1000);
-    };
-
-    ws.onerror = () => {
-      try { ws.close(); } catch {}
-    };
   }
 
-  render();
-  connectWS();
+  // initial
+  listUsers();
 })();

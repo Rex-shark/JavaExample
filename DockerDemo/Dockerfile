@@ -1,9 +1,13 @@
+# Multi-stage build for DockerDemo (Spring Boot 3)
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests package
+
 FROM amazoncorretto:17
-
-# 可透過 --build-arg JAR_FILE=target/YourJarName.jar 來覆蓋
-ARG JAR_FILE=target/DockerDemo-0.0.1-SNAPSHOT.jar
 WORKDIR /app
-COPY ${JAR_FILE} app.jar
-
+# Copy the built jar from the build stage
+COPY --from=build /build/target/*.jar /app/app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]

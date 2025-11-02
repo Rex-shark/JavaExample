@@ -1,10 +1,11 @@
 version: '3.8'
 
 services:
-  app:
+  backend:
     build:
-      context: .
+      context: ./DockerDemo
       dockerfile: Dockerfile
+    image: javaexample/dockerdemo:latest
     container_name: docker-demo-app-c
     ports:
       - "8080:8080"
@@ -12,8 +13,20 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql8-UTC8-c:3306/docker_demo_sql?serverTimezone=Asia/Taipei&useSSL=false&allowPublicKeyRetrieval=true"
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "123456"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
+    networks:
+      - docker-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./game-docker1
+      dockerfile: Dockerfile
+    image: javaexample/game-docker1:latest
+    container_name: game-docker1-c
+    ports:
+      - "5173:80"
     networks:
       - docker-network
     restart: unless-stopped
@@ -21,3 +34,4 @@ services:
 networks:
   docker-network:
     external: true
+

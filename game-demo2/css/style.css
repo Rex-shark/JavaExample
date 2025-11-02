@@ -1,3 +1,17 @@
 /* extra site-level styles (optional) */
 /* empty on purpose; inline styles in index.html handle the game UI */
 
+/* Chat message layout with avatar */
+.chat-msg{ display:flex; align-items:flex-start; gap:8px; }
+.chat-msg .avatar{
+  width: 28px; height: 28px; flex: 0 0 28px;
+  border-radius: 50%;
+  background: #1b2741 center/cover no-repeat;
+  border: 1px solid #2a3347;
+  color:#cbd5e1; display:flex; align-items:center; justify-content:center;
+  font-size: 12px; font-weight: 700;
+}
+.chat-msg .avatar.avatar--fallback{ background:#1b2741; }
+.chat-msg .bubble{ flex:1; }
+.chat-msg .bubble-header{ font-size:12px; opacity:.9; margin-bottom:2px; }
+.chat-msg .bubble-body{ font-size:13px; }

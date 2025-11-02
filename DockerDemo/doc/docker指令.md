@@ -17,6 +17,8 @@ docker-compose up -d
 ```
 
 ##  3. 重新建置映像檔並啟動
+- 會依據 Dockerfile、.env、docker-compose.yml 裡的設定重新建置 image 建完後再啟動容器
+- 適合用在：「我有修改過 Dockerfile 或設定，要讓變更生效」
 ``` 
 docker-compose up --build
 ```
