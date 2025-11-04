@@ -22,18 +22,19 @@ public class LineBotUserService {
         //假的user list
         ArrayList<LineBotUserModel> lineBotUserModels = new ArrayList<>();
         LineBotUserModel user1 = LineBotUserModel.builder()
-                .lineUserId("U")
+                .lineUserId("Ubcfda06fb16affb4b6297038a0bddca5")
                 .name("Rex")
                 .nickname("Rex")
                 .title("智慧軟體處")
-                .imageUrl("")
+                .imageUrl("https://sprofile.line-scdn.net/0hGvfrdyx7GFlLCwlj3E9mZztbGzNoekFLMjoHbCoJEmombl5bYGtRPikIE2ElaV9cZToAbX4OFG1peD5sDj8jOjpcA24FeD4GATBTSzh_QxoTW1pyZggsZgRULREWXBkKAB4cShdPOWxxQC1IOhIKeAkKDRMzZCRdFVx0D045dtokCW8MZmxeOn8PRW_-")
                 .build();
 
         LineBotUserModel user2 = LineBotUserModel.builder()
-                .lineUserId("U222222222222222222222222222222")
-                .name("Amy")
-                .nickname("Amy")
-                .title("工程部")
+                .lineUserId("U7f33bfbfb701596a5499c87c6539e60e")
+                .name("Yu Wei")
+                .nickname("Yu Wei")
+                .title("產業發展處")
+                .imageUrl("https://sprofile.line-scdn.net/0hUEHfoSsiCmplHxumN9Z0FRVPCQBGblN4TXwWXlMbBg5RLxk0QXFFBQMZUghQKRk1HikWWFZKBg5pDH0Me0n2XmIvV1tZJkg9TXpDhA")
                 .build();
 
         lineBotUserModels.add(user1);

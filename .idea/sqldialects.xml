@@ -3,5 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/DockerDemo/sql-console/console.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/JpaMySql/sql-console/console.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/LinebotGame1/sql-console/console.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/LinebotGame1/sql-console/tist-user-insert.sql" dialect="MySQL" />
   </component>
 </project>

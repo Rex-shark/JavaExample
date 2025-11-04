@@ -10,6 +10,7 @@ import com.linecorp.bot.spring.boot.handler.annotation.LineMessageHandler;
 import com.linecorp.bot.webhook.model.*;
 import com.rex.linebotgame1.dispatcher.MessageDispatcher;
 import com.rex.linebotgame1.model.MessageContext;
+import com.rex.linebotgame1.service.LineBotApiService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class LinebotHandler {
 
     @Value("${line.bot.channel-token}")
     private String channelToken;
+
+    @Resource
+    LineBotApiService lineBotApiService;
 
     @Resource
     private MessageDispatcher dispatcher;
@@ -53,12 +57,15 @@ public class LinebotHandler {
             userId = rs.userId();
         }
         System.out.println("userId = " + userId);
+
         MessageContext ctx = MessageContext.builder()
                 .replyToken(event.replyToken())
                 .userId(userId)
                 .groupId(groupId)
                 .text(textMessage.text())
                 .build();
+
+        //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
 
         // 交給責任鏈分派，無命中則不回覆
         return dispatcher.dispatch(ctx);
