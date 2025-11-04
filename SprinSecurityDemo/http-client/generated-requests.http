@@ -1,0 +1,8 @@
+###hello word
+GET http://localhost:8080/hello
+Authorization: Bearer my-secret-token
+
+###hello word
+GET http://10.111.1.134:8080/hello
+Authorization: Bearer my-secret-token
+
