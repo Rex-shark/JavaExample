@@ -60,7 +60,7 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
                 //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
                 GameMessageModel gameMessage = new GameMessageModel();
                 gameMessage.setText(t);
-                gameMessage.setText("move");
+                gameMessage.setType("move");
                 gameMessage.setStatus("1");
 
                 SocketMessageResponse socketResponse = new SocketMessageResponse();
