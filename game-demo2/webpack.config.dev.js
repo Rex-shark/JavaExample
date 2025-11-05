@@ -5,6 +5,7 @@ module.exports = merge(common, {
   mode: 'development',
   devtool: 'inline-source-map',
   devServer: {
+    port: 3000, // ★ 指定開發伺服器的啟動埠號
     liveReload: true,
     hot: true,
     open: true,
@@ -17,7 +18,7 @@ module.exports = merge(common, {
       },
       // {
       //   context: ['/ws','/wss', '/ws/game'],    // 新增：把 websocket 路徑代理到本機 8080
-      //   target: 'https://k4sq98r8-8080.asse.devtunnels.ms',
+      //   target: 'http://localhost:8080',
       //   changeOrigin: true,
       //   ws: true,                         // 啟用 websocket 升級轉發
       // },

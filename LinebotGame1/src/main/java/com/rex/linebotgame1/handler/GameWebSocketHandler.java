@@ -1,6 +1,7 @@
 package com.rex.linebotgame1.handler;
 
 import com.rex.linebotgame1.model.SocketMessageResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 
 public class GameWebSocketHandler   extends TextWebSocketHandler {
     // 全部連線（用於全域廣播）
@@ -74,6 +76,17 @@ public class GameWebSocketHandler   extends TextWebSocketHandler {
     // 指定房間廣播（全部人）
     public void sendToRoom(SocketMessageResponse res , String roomId) {
         Set<WebSocketSession> room = rooms.get(roomId);
+        if (room == null){
+            return;
+        }
+        System.out.println("res = " + res);
+        TextMessage tm = new TextMessage(res.toJson());
+        room.forEach(s -> sendSafe(s, tm));
+    }
+
+    // 指定房間廣播（全部人）
+    public void sendToRoom(SocketMessageResponse res) {
+        Set<WebSocketSession> room = rooms.get(res.getRoomId());
         if (room == null){
             return;
         }

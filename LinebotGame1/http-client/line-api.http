@@ -1,5 +1,5 @@
 ###根據USER_ID取得使用者個人檔案
-GET https://api.line.me/v2/bot/profile/{{lineBotUserIdYuWei}}
+GET https://api.line.me/v2/bot/profile/{{lineBotUserIdT450}}
 Authorization: Bearer {{lineBotBearer}}
 
 ###抓linebot的好友列表-不能用

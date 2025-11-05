@@ -98,27 +98,51 @@
       if (typeof payload === 'string') {
         try { obj = JSON.parse(payload); } catch(_) { /* not json */ }
       }
-      // Determine command source precedence:
-      // 1) JSON with dir field -> use that
-      // 2) JSON with data field -> use that
-      // 3) plain text payload -> use it
+
       let cmd = null;
+
       if (obj && typeof obj === 'object') {
-        if (typeof obj.dir === 'string') {
-          cmd = obj.dir;
-        } else if (typeof obj.data === 'string') {
-          cmd = obj.data;
+        // New format: SocketMessageResponse { success, roomId, message, user:{title, unitName, nickname, imageUrl, ...}, game:{gameCommand} }
+        const looksLikeNew = ('user' in obj) || ('game' in obj) || ('success' in obj);
+        if (looksLikeNew) {
+          // Debug: print full SocketMessageResponse
+          try { console.log('SocketMessageResponse:', obj); } catch(_) {}
+
+          const u = obj.user || {};
+          const g = obj.game || {};
+
+          if (typeof g.gameCommand === 'string') {
+            cmd = g.gameCommand;
+          }
+
+          // Build a simplified view for chat rendering (new spec)
+          const chatView = {
+            unitName: u.unitName,
+            nickname: u.nickname,
+            dir: g.gameCommand,
+            // Only show message if non-empty
+            text: (obj.message == null || String(obj.message).trim() === '') ? undefined : String(obj.message),
+            imageUrl: u.imageUrl,
+          };
+          appendChat(chatView);
+        } else {
+          // Legacy format support: {title,name,dir,text} or {data}
+          if (typeof obj.dir === 'string') {
+            cmd = obj.dir;
+          } else if (typeof obj.data === 'string') {
+            cmd = obj.data;
+          }
+          if (obj.title || obj.name || obj.dir || obj.text) {
+            appendChat(obj);
+          }
         }
       }
+
+      // Plain text fallback (e.g., 'up')
       if (!cmd && typeof payload === 'string') {
         cmd = payload;
       }
       if (!cmd) return;
-
-      // If full JSON with title/name/dir/text exists, append a chat line
-      if (obj && typeof obj === 'object' && (obj.title || obj.name || obj.dir || obj.text)) {
-        appendChat(obj);
-      }
 
       handleCommand(String(cmd).toLowerCase());
     });
@@ -138,8 +162,15 @@
 
   function appendChat(msgObj){
     if (!chatBody || !msgObj) return;
-    const { title, name, dir, text, imageUrl } = msgObj;
-    if (typeof title !== 'string' || typeof name !== 'string' || typeof dir !== 'string') return;
+
+    // Normalize fields for both new and legacy payloads
+    const unitName = (typeof msgObj.unitName === 'string' && msgObj.unitName) || (typeof msgObj.title === 'string' && msgObj.title) || '';
+    const nickname = (typeof msgObj.nickname === 'string' && msgObj.nickname) || (typeof msgObj.name === 'string' && msgObj.name) || '';
+    const dir = (typeof msgObj.dir === 'string' && msgObj.dir) || (typeof msgObj.gameCommand === 'string' && msgObj.gameCommand) || '';
+    const text = (typeof msgObj.text === 'string' && msgObj.text) ? msgObj.text : undefined;
+    const imageUrl = (typeof msgObj.imageUrl === 'string' && msgObj.imageUrl) ? msgObj.imageUrl : undefined;
+
+    if (!unitName || !nickname || !dir) return;
 
     const item = document.createElement('div');
     item.className = 'chat-msg';
@@ -147,13 +178,12 @@
     // avatar
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    if (typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-      // Use background-image for simple contain/cover fit
-      const safeUrl = imageUrl.replace(/"/g, '%22');
+    if (imageUrl) {
+      const safeUrl = imageUrl.replace(/\"/g, '%22');
       avatar.style.backgroundImage = `url("${safeUrl}")`;
     } else {
       avatar.classList.add('avatar--fallback');
-      avatar.textContent = (name && name.trim()) ? name.trim().charAt(0).toUpperCase() : '?';
+      avatar.textContent = nickname.trim() ? nickname.trim().charAt(0).toUpperCase() : '?';
     }
 
     // message bubble/content
@@ -161,10 +191,10 @@
     bubble.className = 'bubble';
     const header = document.createElement('div');
     header.className = 'bubble-header';
-    header.innerHTML = `<strong>${escapeHtml(title)}-${escapeHtml(name)}</strong>`;
+    header.innerHTML = `<strong>${escapeHtml(unitName)} - ${escapeHtml(nickname)}</strong>`;
     const body = document.createElement('div');
     body.className = 'bubble-body';
-    body.innerHTML = `${escapeHtml(dir)}${text ? ` <small>(${escapeHtml(text)})</small>` : ''}`;
+    body.innerHTML = `${escapeHtml(dir)}${text ? ` ${escapeHtml(text)}` : ''}`;
 
     bubble.appendChild(header);
     bubble.appendChild(body);
@@ -186,7 +216,7 @@
 
   async function sendMove(cmd){
     try {
-      // Prefer new JSON-based endpoint move2 so server pushes {title,name,dir,text}
+      // Prefer new JSON-based endpoint move2 so server pushes SocketMessageResponse
       const url = `/move/move2?id=${encodeURIComponent(roomId)}&name=${encodeURIComponent(debugName)}&title=${encodeURIComponent(debugTitle)}&dir=${encodeURIComponent(cmd)}`;
       const res = await fetch(url, { method: 'GET' });
       await res.text();

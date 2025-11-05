@@ -1,4 +1,4 @@
-package com.rex.linebotgame1;
+package com.rex.linebotgame1.websocket;
 
 import com.rex.linebotgame1.handler.GameWebSocketHandler;
 import org.springframework.context.annotation.Bean;

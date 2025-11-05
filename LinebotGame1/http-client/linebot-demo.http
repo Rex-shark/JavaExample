@@ -1,0 +1,13 @@
+###依照ID 發訊息 Rex
+PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdRex}}
+
+###
+POST http://localhost:8080/linebot-message-demo/game-websocket
+Content-Type: application/json
+
+{
+    "userId": "{{lineBotUserIdRex}}",
+    "text": "up",
+    "roomId": "default",
+    "groupId": "groupId"
+}

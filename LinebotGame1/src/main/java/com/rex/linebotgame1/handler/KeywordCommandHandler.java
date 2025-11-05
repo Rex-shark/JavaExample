@@ -2,6 +2,7 @@ package com.rex.linebotgame1.handler;
 
 import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.TextMessage;
+import com.rex.linebotgame1.model.GameMessageModel;
 import com.rex.linebotgame1.model.LineBotUserModel;
 import com.rex.linebotgame1.model.MessageContext;
 import com.rex.linebotgame1.model.SocketMessageResponse;
@@ -55,12 +56,21 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
             Optional<LineBotUserModel> userOpt = lineBotUserService.getUserByLineUserId(ctx);
             if (userOpt.isPresent()) {
                 LineBotUserModel user = userOpt.get();
-                System.out.println("找到使用者：" + user.getName());
+                System.out.println("找到使用者：" + user.getName() );
                 //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
+                GameMessageModel gameMessage = new GameMessageModel();
+                gameMessage.setGameCommand(t);
+                gameMessage.setStatus("1");
 
-                wsHandler.sendToRoom(new SocketMessageResponse(user.getTitle(), user.getNickname(),t
-                        ,"\uD83D\uDE0A", user.getImageUrl()),roomId);
-                return new TextMessage(user.getNickname()+"移動：" + t);
+                SocketMessageResponse socketResponse = new SocketMessageResponse();
+                socketResponse.setSuccess(true);
+                socketResponse.setRoomId(roomId);
+                socketResponse.setUser(user);
+                socketResponse.setGame(gameMessage);
+                socketResponse.setMessage("\uD83D\uDE0A");
+
+                wsHandler.sendToRoom(socketResponse);
+                return new TextMessage(user.getNickname()+" 移動：" + t);
             } else {
                 System.out.println("找不到這個 userId");
                 return new TextMessage("您尚未註冊！" );
