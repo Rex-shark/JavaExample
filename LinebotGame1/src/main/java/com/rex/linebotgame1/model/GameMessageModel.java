@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class GameMessageModel {
-
-    String gameCommand;
+    String type;
+    String text;
     String status;//保留使用，尚未定義
 
 }

@@ -102,7 +102,6 @@
       let cmd = null;
 
       if (obj && typeof obj === 'object') {
-        // New format: SocketMessageResponse { success, roomId, message, user:{title, unitName, nickname, imageUrl, ...}, game:{gameCommand} }
         const looksLikeNew = ('user' in obj) || ('game' in obj) || ('success' in obj);
         if (looksLikeNew) {
           // Debug: print full SocketMessageResponse
@@ -111,17 +110,24 @@
           const u = obj.user || {};
           const g = obj.game || {};
 
-          if (typeof g.gameCommand === 'string') {
-            cmd = g.gameCommand;
+          const type = typeof g.type === 'string' ? g.type.toLowerCase() : '';
+          const gText = typeof g.text === 'string' ? g.text : undefined;
+
+          // movement command when type === 'move'
+          if (type === 'move' && typeof gText === 'string') {
+            cmd = gText;
           }
 
-          // Build a simplified view for chat rendering (new spec)
+          // Build a simplified view for chat rendering
+          // - move: show dir = g.text, optional extra text from obj.message
+          // - message: show only text = g.text
           const chatView = {
             unitName: u.unitName,
             nickname: u.nickname,
-            dir: g.gameCommand,
-            // Only show message if non-empty
-            text: (obj.message == null || String(obj.message).trim() === '') ? undefined : String(obj.message),
+            dir: type === 'move' ? gText : undefined,
+            text: (type === 'message')
+              ? (gText && String(gText).trim() ? String(gText) : undefined)
+              : ((obj.message == null || String(obj.message).trim() === '') ? undefined : String(obj.message)),
             imageUrl: u.imageUrl,
           };
           appendChat(chatView);
@@ -170,7 +176,8 @@
     const text = (typeof msgObj.text === 'string' && msgObj.text) ? msgObj.text : undefined;
     const imageUrl = (typeof msgObj.imageUrl === 'string' && msgObj.imageUrl) ? msgObj.imageUrl : undefined;
 
-    if (!unitName || !nickname || !dir) return;
+    // Require identity and at least one of dir or text
+    if (!unitName || !nickname || (!dir && !text)) return;
 
     const item = document.createElement('div');
     item.className = 'chat-msg';
@@ -194,7 +201,14 @@
     header.innerHTML = `<strong>${escapeHtml(unitName)} - ${escapeHtml(nickname)}</strong>`;
     const body = document.createElement('div');
     body.className = 'bubble-body';
-    body.innerHTML = `${escapeHtml(dir)}${text ? ` ${escapeHtml(text)}` : ''}`;
+
+    if (dir && text) {
+      body.innerHTML = `${escapeHtml(dir)} ${escapeHtml(text)}`;
+    } else if (dir) {
+      body.innerHTML = `${escapeHtml(dir)}`;
+    } else if (text) {
+      body.innerHTML = `${escapeHtml(text)}`;
+    }
 
     bubble.appendChild(header);
     bubble.appendChild(body);

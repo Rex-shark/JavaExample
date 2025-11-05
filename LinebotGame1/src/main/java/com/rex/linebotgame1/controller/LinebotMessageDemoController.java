@@ -40,6 +40,7 @@ public class LinebotMessageDemoController {
     public ResponseEntity<String> gameWebsocket(@RequestBody Map<String, String> body) {
         String userId = body.get("userId");
         String text = body.get("text");
+        String type = body.get("type");
         String roomId = body.get("roomId");
         String groupId = body.get("groupId");
 
@@ -59,7 +60,8 @@ public class LinebotMessageDemoController {
             System.out.println("找到使用者：" + user.getName() );
             //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
             GameMessageModel gameMessage = new GameMessageModel();
-            gameMessage.setGameCommand(text);
+            gameMessage.setText(text);
+            gameMessage.setType(type);
             gameMessage.setStatus("1");
 
             SocketMessageResponse socketResponse = new SocketMessageResponse();
@@ -70,7 +72,7 @@ public class LinebotMessageDemoController {
             socketResponse.setMessage("\uD83D\uDE0A");
 
             wsHandler.sendToRoom(socketResponse);
-            return ResponseEntity.ok(user.getNickname()+" 移動：" + text);
+            return ResponseEntity.ok(user.getNickname()+" 發送遊戲指令：" + text);
         } else {
             System.out.println("找不到這個 userId");
             return ResponseEntity.ok("您尚未註冊！" );
