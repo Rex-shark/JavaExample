@@ -3,12 +3,18 @@ package com.rex.linebotgame1.handler;
 import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.TextMessage;
 import com.rex.linebotgame1.model.MessageContext;
+import com.rex.linebotgame1.service.TistUserService;
+import jakarta.annotation.Resource;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 @Order(0)
 public class DashCommandHandler  implements LineBotMessageHandler{
+
+
+    @Resource
+    TistUserService  tistUserService;
 
     @Override
     public boolean canHandle(MessageContext ctx) {
@@ -24,6 +30,7 @@ public class DashCommandHandler  implements LineBotMessageHandler{
         }
         if (t.startsWith("-註冊")) {
             System.out.println("收到註冊指令！");
+            return new TextMessage(tistUserService.registerTistUser(ctx));
         }
         return new TextMessage("收到指令：" + t);
     }

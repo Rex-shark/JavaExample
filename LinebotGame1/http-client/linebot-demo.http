@@ -1,14 +1,38 @@
 ###依照ID 發訊息 Rex
 PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdRex}}
 
-###game1-websocket 發 move 指令 Rex
+###game1-websocket 發  指令 Rex
 POST http://localhost:8080/linebot-message-demo/game-websocket
 Content-Type: application/json
 
 {
     "userId": "{{lineBotUserIdRex}}",
     "text": "up",
-    "type": "move",
+    "type": "join",
+    "roomId": "default",
+    "groupId": "groupId"
+}
+
+###game1-websocket 發  指令
+POST http://localhost:8080/linebot-message-demo/game-websocket
+Content-Type: application/json
+
+{
+    "userId": "{{lineBotUserIdYuWei}}",
+    "text": "left",
+    "type": "join",
+    "roomId": "default",
+    "groupId": "groupId"
+}
+
+###game1-websocket 發  指令
+POST http://localhost:8080/linebot-message-demo/game-websocket
+Content-Type: application/json
+
+{
+    "userId": "{{lineBotUserIdT450}}",
+    "text": "right",
+    "type": "join",
     "roomId": "default",
     "groupId": "groupId"
 }
@@ -18,8 +42,8 @@ POST http://localhost:8080/linebot-message-demo/game-websocket
 Content-Type: application/json
 
 {
-    "userId": "{{lineBotUserIdRex}}",
-    "text": "大家好啊",
+    "userId": "{{lineBotUserIdT450}}",
+    "text": "來啊！！",
     "type": "message",
     "roomId": "default",
     "groupId": "groupId"

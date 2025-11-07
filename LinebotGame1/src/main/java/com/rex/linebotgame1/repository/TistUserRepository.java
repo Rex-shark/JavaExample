@@ -15,6 +15,8 @@ public interface TistUserRepository extends JpaRepository<TistUser, Long> {
     @NotNull Optional<TistUser> findById(@NotNull Long id);
     boolean existsById(@NotNull Long id);
 
+    Optional<TistUser> findByTistIdAndSystexId(String tistId, String systexId);
+
     Optional<TistUser> findByTistId(String tistId);
     boolean existsByTistId(String tistId);
 
