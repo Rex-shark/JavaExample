@@ -55,6 +55,24 @@
     .countdown-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 60; }
     .countdown-box { background: #0f172a; border: 1px solid #24314a; border-radius: 12px; padding: 20px 28px; box-shadow: 0 10px 30px rgba(0,0,0,.5); text-align: center; }
     .countdown-num { font-size: 56px; font-weight: 800; letter-spacing: 2px; }
+
+    /* Cells layer for poison ring */
+    .cells-layer { position:absolute; inset:0; pointer-events:none; }
+    .cell { position:absolute; top:50%; left:50%; width:20px; height:20px; margin-left:-10px; margin-top:-10px; border-radius:4px; box-sizing:border-box; border:1px solid transparent; }
+    .cell--warn { animation: blinkWarn 0.3s linear infinite alternate; border-color:#ffcc66aa; }
+    @keyframes blinkWarn { from { background:#ffcc6622; } to { background:#ffcc6699; } }
+    .cell--toxic { background:#a00030cc; border-color:#ff3b58; }
+    .cell--toxic::after { content:'✕'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ffd0da; font-weight:800; font-size:14px; }
+
+    /* Win overlay */
+    .win-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 70; }
+    .win-box { background: #0f172a; border: 1px solid #24314a; border-radius: 12px; padding: 16px 18px; width: min(90vw, 420px); box-shadow: 0 10px 30px rgba(0,0,0,.5); text-align: center; }
+    .win-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .win-sub { opacity: .95; margin-bottom: 10px; }
+    .win-list { text-align:left; background:#0e1527; border:1px solid #22314a; border-radius:8px; padding:8px 10px; max-height: 40vh; overflow:auto; }
+    .win-actions { margin-top: 12px; }
+    .win-actions button { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .win-actions button:hover { filter: brightness(1.1); }
   </style>
 </head>
 
@@ -77,6 +95,7 @@
 
       <div class="stage" id="stage">
         <div class="grid"></div>
+        <div id="cellsLayer" class="cells-layer"></div>
         <!-- players injected by JS -->
       </div>
 
@@ -92,6 +111,21 @@
   <!-- Countdown overlay -->
   <div id="countdownOverlay" class="countdown-overlay" role="dialog" aria-modal="true" aria-label="倒數">
     <div class="countdown-box"><div id="countdownNum" class="countdown-num">5</div></div>
+  </div>
+
+  <!-- Victory overlay -->
+  <div id="winOverlayDevour" class="win-overlay" role="dialog" aria-modal="true" aria-label="勝利" style="display:none">
+    <div class="win-box">
+      <div class="win-title">勝利者</div>
+      <div class="win-sub">恭喜以下玩家獲勝！</div>
+      <div class="win-list">
+        <!-- Winner list injected by JS -->
+      </div>
+      <div class="win-actions">
+        <button id="btnShare">分享連結</button>
+        <button id="btnReplay">再玩一次</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/devour_game.js"></script>

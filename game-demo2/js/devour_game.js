@@ -172,6 +172,246 @@
     }
   }
 
+  // Poison ring implementation
+  const poison = {
+    cellSize: 20, // match grid background size
+    cells: [], // {x,y,el,state:'normal'|'warn'|'toxic'} positioned by translate
+    spiral: [], // indices order for toxic progression
+    started: false,
+    timer: null,
+    warnMs: 100,
+    stepMs: 200,
+  };
+
+  function buildCells(){
+    const layer = document.getElementById('cellsLayer');
+    if (!layer) return;
+    layer.innerHTML = '';
+    poison.cells = [];
+
+    const rect = stage.getBoundingClientRect();
+    const cols = Math.floor(rect.width / poison.cellSize);
+    const rows = Math.floor(rect.height / poison.cellSize);
+
+    // Origin centered: compute cell center positions in our translate coordinate (center is 0,0)
+    const xMin = -Math.floor(cols/2) * poison.cellSize + (cols%2===0 ? poison.cellSize/2 : 0);
+    const yMin = -Math.floor(rows/2) * poison.cellSize + (rows%2===0 ? poison.cellSize/2 : 0);
+
+    for (let r=0; r<rows; r++){
+      for (let c=0; c<cols; c++){
+        const cx = xMin + c * poison.cellSize;
+        const cy = yMin + r * poison.cellSize;
+        const el = document.createElement('div');
+        el.className = 'cell';
+        el.style.transform = `translate(${cx}px, ${cy}px)`;
+        layer.appendChild(el);
+        poison.cells.push({ x: cx, y: cy, el, state: 'normal', r, c });
+      }
+    }
+
+    // Build spiral indices from top-left going clockwise inward
+    const idx = [];
+    let top=0, left=0, bottom=rows-1, right=cols-1;
+    while (left <= right && top <= bottom){
+      for (let c=left; c<=right; c++) idx.push({r:top,c});
+      for (let r=top+1; r<=bottom; r++) idx.push({r,c:right});
+      if (top < bottom){ for (let c=right-1; c>=left; c--) idx.push({r:bottom,c}); }
+      if (left < right){ for (let r=bottom-1; r>top; r--) idx.push({r,c:left}); }
+      top++; left++; bottom--; right--;
+    }
+    // Map to cell indices
+    poison.spiral = idx.map(({r,c}) => r*cols + c).filter(i => i >=0 && i < poison.cells.length);
+  }
+
+  function startPoisonAfterDelay(){
+    if (poison.started) return;
+    poison.started = true;
+    // Build once at start
+    buildCells();
+    // Start 10s after game start
+    setTimeout(() => runPoisonLoop(), 10000);
+  }
+
+  function runPoisonLoop(){
+    let i = 0;
+    const loop = () => {
+      if (playersLeft() <= 1){ return; }
+      if (i >= poison.spiral.length){ return; }
+      const cell = poison.cells[poison.spiral[i]];
+      if (!cell){ return; }
+      // warn
+      setCellState(cell, 'warn');
+      setTimeout(() => {
+        // toxic
+        setCellState(cell, 'toxic');
+        // eliminate players on this cell
+        eliminatePlayersOnCell(cell);
+        i++;
+        poison.timer = setTimeout(loop, poison.stepMs);
+      }, poison.warnMs);
+    };
+    loop();
+  }
+
+  function setCellState(cell, state){
+    if (!cell || cell.state === state) return;
+    cell.state = state;
+    const el = cell.el;
+    el.classList.remove('cell--warn','cell--toxic');
+    if (state === 'warn') el.classList.add('cell','cell--warn');
+    if (state === 'toxic') el.classList.add('cell','cell--toxic');
+  }
+
+  function playersLeft(){
+    let cnt = 0;
+    for (const p of players.values()) if (p.alive) cnt++;
+    return cnt;
+  }
+
+  function isToxicAt(x, y){
+    // Find the cell covering this coordinate; since cells are on a grid aligned by cellSize,
+    // we can match by proximity within half cell size.
+    for (const cell of poison.cells){
+      if (cell.state !== 'toxic') continue;
+      if (Math.abs(cell.x - x) < poison.cellSize/2 && Math.abs(cell.y - y) < poison.cellSize/2) return true;
+    }
+    return false;
+  }
+
+  function eliminatePlayersOnCell(cell){
+    for (const [id, p] of players){
+      if (!p.alive) continue;
+      if (Math.abs(cell.x - p.x) < poison.cellSize/2 && Math.abs(cell.y - p.y) < poison.cellSize/2){
+        // eliminate
+        p.alive = false;
+        if (p.el && p.el.parentNode) { p.el.parentNode.removeChild(p.el); }
+        p.el = null;
+        appendDevourChat(`${p.unitName || ''} - ${p.nickname || ''} 被毒圈吞噬`);
+        renderScore();
+      }
+    }
+  }
+
+  // Extend movement blocking with toxic cells
+  const _origApplyMove = handleMove;
+  handleMove = function(obj, dir){
+    const u = obj.user || {};
+    const id = u && u.lineUserId ? String(u.lineUserId) : `${u.unitName}-${u.nickname}`;
+    let p = players.get(id);
+    if (!p || !p.alive) return _origApplyMove(obj, dir);
+    if (!gameStarted){ return _origApplyMove(obj, dir); }
+
+    const b = bounds();
+    const next = { x: p.x, y: p.y };
+    switch(dir){
+      case 'up': next.y = clamp(p.y - step, b.yMin, b.yMax); break;
+      case 'down': next.y = clamp(p.y + step, b.yMin, b.yMax); break;
+      case 'left': next.x = clamp(p.x - step, b.xMin, b.xMax); break;
+      case 'right': next.x = clamp(p.x + step, b.xMin, b.xMax); break;
+      default: return _origApplyMove(obj, dir);
+    }
+    // block entry if next cell is toxic
+    if (isToxicAt(next.x, next.y)){
+      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 試圖進入毒圈被阻擋`);
+      return; // skip move
+    }
+    // perform original move flow (will also check collisions)
+    return _origApplyMove(obj, dir);
+  };
+
+  // Trigger poison after game starts
+  (function(){
+    const btn = document.getElementById('btnStart');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      // start poison countdown when game starts; our showCountdownAndStart handles gameStarted flip.
+      // We hook a small delay to poll gameStarted then schedule poison in 10s.
+      const poll = setInterval(()=>{
+        if (gameStarted){
+          clearInterval(poll);
+          startPoisonAfterDelay();
+        }
+      }, 200);
+    });
+  })();
+
+  let gameOver = false;
+
+  function checkVictory(){
+    if (gameOver) return;
+    const alive = Array.from(players.values()).filter(p => p.alive);
+    if (alive.length === 1){
+      gameOver = true;
+      showVictoryOverlay(alive[0]);
+    }
+  }
+
+  function showVictoryOverlay(winner){
+    const overlay = document.getElementById('winOverlayDevour');
+    if (!overlay) return;
+    const listBox = overlay.querySelector('.win-list');
+    if (listBox) listBox.innerHTML = '';
+
+    // Winner info
+    const wDiv = document.createElement('div');
+    wDiv.innerHTML = `<strong>獲勝者:</strong> ${escapeHtml(winner.unitName)} ${escapeHtml(winner.nickname)} (擊殺:${winner.eat||0})`;
+    if (listBox) listBox.appendChild(wDiv);
+
+    // Top killers (>=1) - may include winner again, so exclude winner then re-add if multiple top
+    const all = Array.from(players.values());
+    const maxKill = Math.max(0, ...all.map(p => p.eat||0));
+    if (maxKill >= 1){
+      const tops = all.filter(p => (p.eat||0) === maxKill);
+      // Remove winner from top list if present to avoid duplicate label; but spec says if multiple, show all
+      // We'll show a separate block for 殺敵王; list all with maxKill.
+      const header = document.createElement('div');
+      header.style.marginTop = '6px';
+      header.innerHTML = `<strong>殺敵王 (擊殺數:${maxKill}):</strong>`;
+      if (listBox) listBox.appendChild(header);
+      const ul = document.createElement('ul');
+      ul.style.paddingLeft = '18px';
+      ul.style.margin = '4px 0 0 0';
+      for (const p of tops){
+        const li = document.createElement('li');
+        li.textContent = `${p.unitName} ${p.nickname}`;
+        ul.appendChild(li);
+      }
+      if (listBox) listBox.appendChild(ul);
+    }
+
+    overlay.style.display = 'flex';
+
+    // Stop poison loop
+    if (poison.timer) { clearTimeout(poison.timer); }
+
+    const btnReplay = document.getElementById('btnReplay');
+    if (btnReplay){ btnReplay.onclick = () => window.location.reload(); }
+    const btnShare = document.getElementById('btnShare');
+    if (btnShare){
+      btnShare.onclick = () => {
+        try {
+          navigator.clipboard.writeText(window.location.href);
+          appendDevourChat('已複製分享連結');
+        } catch(_) {
+          appendDevourChat('無法複製分享連結');
+        }
+      };
+    }
+  }
+
+  // Insert victory checks where players can die or be eaten
+  const _origEliminatePlayersOnCell = eliminatePlayersOnCell;
+  eliminatePlayersOnCell = function(cell){
+    _origEliminatePlayersOnCell(cell);
+    checkVictory();
+  };
+
+  const _origHandleMove = handleMove;
+  handleMove = function(obj, dir){
+    _origHandleMove(obj, dir);
+    checkVictory();
+  };
+
   function handleMove(obj, dir){
     const u = obj.user || {};
     const id = u && u.lineUserId ? String(u.lineUserId) : `${u.unitName}-${u.nickname}`;
