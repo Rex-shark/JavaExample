@@ -54,8 +54,89 @@
     player.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
   }
 
+  // --- targets & victory ---
+  const targets = []; // { x, y, label, el }
+  const halfTarget = 10; // target size 20x20
+  let gameOver = false;
+  let lastCommander = { unitName: '', nickname: '' }; // set on latest WS move
+
+  function randomInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function createTarget(x, y, label, edge){
+    const el = document.createElement('div');
+    el.className = `target target--${edge}`;
+    // Position relative to center like player
+    el.style.transform = `translate(${x}px, ${y}px)`;
+    stage.appendChild(el);
+    targets.push({ x, y, label, el });
+  }
+
+  function initTargets(){
+    // Clear existing (if any)
+    targets.splice(0, targets.length);
+    stage.querySelectorAll('.target').forEach(n => n.remove());
+
+    const b = bounds();
+    // Map edge -> label
+    const labels = {
+      top: '智慧軟體處',
+      right: '產業研發處',
+      bottom: '營業服務處+總經理室',
+      left: '創新應用處+研發工程處',
+    };
+
+    // Top: y = yMin, x random in [xMin, xMax]
+    createTarget(randomInt(b.xMin, b.xMax), b.yMin, labels.top, 'top');
+    // Right: x = xMax, y random
+    createTarget(b.xMax, randomInt(b.yMin, b.yMax), labels.right, 'right');
+    // Bottom
+    createTarget(randomInt(b.xMin, b.xMax), b.yMax, labels.bottom, 'bottom');
+    // Left
+    createTarget(b.xMin, randomInt(b.yMin, b.yMax), labels.left, 'left');
+  }
+
+  function aabbOverlap(ax, ay, ahw, ahh, bx, by, bhw, bhh){
+    return Math.abs(ax - bx) <= (ahw + bhw) && Math.abs(ay - by) <= (ahh + bhh);
+  }
+
+  function checkWin(){
+    if (!targets.length || gameOver) return null;
+    for (const t of targets){
+      if (aabbOverlap(pos.x, pos.y, halfPlayer, halfPlayer, t.x, t.y, halfTarget, halfTarget)){
+        return t;
+      }
+    }
+    return null;
+  }
+
+  function showWinDialog(dept, commander){
+    // Build overlay or ensure it has content
+    let overlay = document.getElementById('winOverlay');
+    if (!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'winOverlay';
+      overlay.className = 'win-overlay';
+      document.body.appendChild(overlay);
+    }
+    // Ensure inner structure exists
+    if (!overlay.querySelector('.win-box')){
+      overlay.innerHTML = '<div class="win-box"><div class="win-title"></div><div class="win-sub"></div><div class="win-actions"><button id="btn-reload">重新開始</button></div></div>';
+      const btn = overlay.querySelector('#btn-reload');
+      if (btn){ btn.addEventListener('click', () => window.location.reload()); }
+    }
+
+    const title = overlay.querySelector('.win-title');
+    const sub = overlay.querySelector('.win-sub');
+    if (title) title.textContent = `恭喜${dept}獲勝！`;
+    const u = commander || { unitName: '', nickname: '' };
+    // 下一行顯示「單位名稱 - 姓名」
+    if (sub) sub.textContent = `${u.unitName || '-'} - ${u.nickname || '-'}`;
+    overlay.style.display = 'flex';
+  }
+
   // initialize
   applyPos();
+  initTargets();
   window.addEventListener('resize', applyPos);
 
   function setStatus(text, cls){
@@ -92,6 +173,8 @@
     ws.addEventListener('error', () => setStatus('Error', 'err'));
 
     ws.addEventListener('message', (ev) => {
+      if (gameOver) return; // ignore inputs after victory
+
       let payload = ev.data;
       let obj = null;
       // Try parse JSON
@@ -107,6 +190,27 @@
           // Debug: print full SocketMessageResponse
           try { console.log('SocketMessageResponse:', obj); } catch(_) {}
 
+          // New: branch by SocketMessageType (obj.type)
+          // Backend sends enum as upper-case by default (e.g., "USER"/"SYSTEM"/"UNKNOWN");
+          // we normalize to lower-case. Default to 'user' for backward compatibility when missing.
+          const socketTypeRaw = obj.type;
+          const socketType = (typeof socketTypeRaw === 'string') ? socketTypeRaw.toLowerCase() : 'user';
+
+          if (socketType === 'unknown') {
+            // UNKNOWN: ignore, only log for diagnostics
+            try { console.log('[ignored] SocketMessageType=UNKNOWN', obj); } catch(_) {}
+            return;
+          }
+
+          if (socketType === 'system') {
+            // SYSTEM: reserved for future server-initiated system messages.
+            // TODO: handle system notifications (e.g., room created, countdown, broadcast, etc.)
+            // For now, keep a placeholder and optionally log.
+            try { console.log('[system] message (reserved)', obj); } catch(_) {}
+            return;
+          }
+
+          // USER: proceed with original game/message logic
           const u = obj.user || {};
           const g = obj.game || {};
 
@@ -116,6 +220,8 @@
           // movement command when type === 'move'
           if (type === 'move' && typeof gText === 'string') {
             cmd = gText;
+            // Remember commander for victory message
+            lastCommander = { unitName: u.unitName || '', nickname: u.nickname || '' };
           }
 
           // Build a simplified view for chat rendering
@@ -155,6 +261,7 @@
   }
 
   function handleCommand(cmd){
+    if (gameOver) return;
     const b = bounds();
     switch(cmd){
       case 'up': pos.y = clamp(pos.y - step, b.yMin, b.yMax); break;
@@ -164,6 +271,13 @@
       default: return;
     }
     applyPos();
+
+    const winTarget = checkWin();
+    if (winTarget){
+      gameOver = true;
+      setStatus('Victory!', 'ok');
+      showWinDialog(winTarget.label, lastCommander);
+    }
   }
 
   function appendChat(msgObj){
@@ -186,7 +300,7 @@
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     if (imageUrl) {
-      const safeUrl = imageUrl.replace(/\"/g, '%22');
+      const safeUrl = imageUrl.replace(/"/g, '%22');
       avatar.style.backgroundImage = `url("${safeUrl}")`;
     } else {
       avatar.classList.add('avatar--fallback');

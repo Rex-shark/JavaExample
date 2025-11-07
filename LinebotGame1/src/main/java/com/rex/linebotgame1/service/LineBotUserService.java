@@ -10,6 +10,7 @@ import java.util.Optional;
 @Service
 public class LineBotUserService {
 
+    //去資料庫抓TIST使用者(還沒做好)
     public Optional<LineBotUserModel> getUserByLineUserId(MessageContext ctx ) {
         // 模擬從資料庫或其他來源取得使用者資料
         return findUser(ctx);

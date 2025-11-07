@@ -2,6 +2,7 @@ package com.rex.linebotgame1.handler;
 
 import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.TextMessage;
+import com.rex.linebotgame1.enums.GameMessageType;
 import com.rex.linebotgame1.model.GameMessageModel;
 import com.rex.linebotgame1.model.LineBotUserModel;
 import com.rex.linebotgame1.model.MessageContext;
@@ -60,7 +61,8 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
                 //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
                 GameMessageModel gameMessage = new GameMessageModel();
                 gameMessage.setText(t);
-                gameMessage.setType("move");
+
+                gameMessage.setType(GameMessageType.MOVE);
                 gameMessage.setStatus("1");
 
                 SocketMessageResponse socketResponse = new SocketMessageResponse();

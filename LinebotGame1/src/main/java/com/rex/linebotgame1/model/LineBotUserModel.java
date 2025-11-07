@@ -27,6 +27,6 @@ public class LineBotUserModel {
     String unitName;
     String title;
     String message;
-    String imageUrl;
+    String imageUrl;//line大頭貼網址
 
 }

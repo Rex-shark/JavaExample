@@ -93,6 +93,25 @@
       transition: transform 80ms ease-out;
     }
 
+    /* Targets */
+    .target {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin-left: -10px;
+      margin-top: -10px;
+      background: #ffd166;
+      border: 2px solid #f7b801;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.45);
+    }
+    .target--top { background: #ff6b6b; border-color: #ff4d4d; }
+    .target--right { background: #6bff95; border-color: #3de477; }
+    .target--bottom { background: #9ecbff; border-color: #6ba8ff; }
+    .target--left { background: #f9a8d4; border-color: #f472b6; }
+
     /* Chat panel */
     .chat {
       width: 300px;
@@ -126,6 +145,42 @@
     .back a:hover {
       text-decoration: underline;
     }
+
+    /* Win overlay */
+    .win-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.55);
+      z-index: 50;
+    }
+    .win-box {
+      background: #0f172a;
+      border: 1px solid #24314a;
+      border-radius: 12px;
+      padding: 16px 18px;
+      width: min(90vw, 380px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+      text-align: center;
+    }
+    .win-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .win-sub { opacity: .9; margin-bottom: 12px; }
+    .win-actions button { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .win-actions button:hover { filter: brightness(1.1); }
+
+    /* Legend for targets and departments */
+    .legend { width: min(100%, 980px); margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .legend-title { font-size: 14px; opacity: .9; }
+    .legend-list { list-style: none; display: flex; gap: 12px; padding: 0; margin: 0; flex-wrap: wrap; justify-content: center; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 8px; background: #101a2b; border: 1px solid #2a3347; border-radius: 8px; padding: 6px 10px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.45); border: 2px solid currentColor; }
+    .legend-dot--top { background: #ff6b6b; color: #ff4d4d; }
+    .legend-dot--right { background: #6bff95; color: #3de477; }
+    .legend-dot--bottom { background: #9ecbff; color: #6ba8ff; }
+    .legend-dot--left { background: #f9a8d4; color: #f472b6; }
+    .legend-note { font-size: 12px; opacity: .75; }
   </style>
 </head>
 
@@ -144,6 +199,7 @@
         <div class="stage" id="stage">
           <div class="grid"></div>
           <div class="player" id="player" aria-label="player"></div>
+          <!-- targets will be injected by JS -->
         </div>
       </div>
 
@@ -153,26 +209,25 @@
       </aside>
     </div>
 
-    <div class="panel">
-      <span>Debug:</span>
-      <button data-cmd="up">Up</button>
-      <button data-cmd="left">Left</button>
-      <button data-cmd="down">Down</button>
-      <button data-cmd="right">Right</button>
-      <span style="opacity:.8">(Sends GET /move/move2?dir=...&id=ROOM)</span>
-    </div>
+    <!-- Legend: show target color -> department mapping -->
+    <section class="legend" aria-label="目標點對應單位">
+      <div class="legend-title">單位</div>
+      <ul class="legend-list">
+        <li class="legend-item"><span class="legend-dot legend-dot--top" aria-hidden="true"></span><span>智慧軟體處</span></li>
+        <li class="legend-item"><span class="legend-dot legend-dot--right" aria-hidden="true"></span><span>產業研發處</span></li>
+        <li class="legend-item"><span class="legend-dot legend-dot--bottom" aria-hidden="true"></span><span>營業服務處+總經理室</span></li>
+        <li class="legend-item"><span class="legend-dot legend-dot--left" aria-hidden="true"></span><span>創新應用處+研發工程處</span></li>
+      </ul>
 
-    <p style="opacity:.85;margin:8px 0 0 0; font-size: 13px; text-align:center;">
-      Tips: Use URL ?id=roomA to join a room. Server pushes SocketMessageResponse. Game uses game.type and game.text.
-      <br>
-      Keyboard: <small class="kbd">↑</small> <small class="kbd">↓</small> <small class="kbd">←</small> <small class="kbd">→</small>
-    </p>
+    </section>
 
     <div class="back"><a href="./">← 回首頁</a></div>
   </div>
+
+  <!-- Win overlay (hidden by default, shown by JS) -->
+  <div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle" style="display:none"></div>
 
   <script src="js/app.js"></script>
 </body>
 
 </html>
-

@@ -1,5 +1,6 @@
 package com.rex.linebotgame1.model;
 
+import com.rex.linebotgame1.enums.GameMessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class GameMessageModel {
-    String type;
+    GameMessageType type;
     String text;
     String status;//保留使用，尚未定義
 

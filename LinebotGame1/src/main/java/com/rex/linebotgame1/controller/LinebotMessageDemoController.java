@@ -6,6 +6,7 @@ import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.PushMessageRequest;
 import com.linecorp.bot.messaging.model.PushMessageResponse;
 import com.linecorp.bot.messaging.model.TextMessage;
+import com.rex.linebotgame1.enums.GameMessageType;
 import com.rex.linebotgame1.handler.GameWebSocketHandler;
 import com.rex.linebotgame1.model.GameMessageModel;
 import com.rex.linebotgame1.model.LineBotUserModel;
@@ -61,7 +62,7 @@ public class LinebotMessageDemoController {
             //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
             GameMessageModel gameMessage = new GameMessageModel();
             gameMessage.setText(text);
-            gameMessage.setType(type);
+            gameMessage.setType(GameMessageType.from(type));
             gameMessage.setStatus("1");
 
             SocketMessageResponse socketResponse = new SocketMessageResponse();
