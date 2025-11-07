@@ -40,6 +40,7 @@
 
     <div class="cards">
       <a id="btn-move" class="btn" href="./fight_move_game.html">移動遊戲（fight_move_game）</a>
+      <a id="btn-devour" class="btn" href="./devour_game.html">吞噬遊戲（devour_game）</a>
       <small class="hint">按下後進入遊戲頁</small>
     </div>
   </div>
@@ -47,22 +48,24 @@
   <script>
     // Preserve current query string (e.g., ?id=..., ?backend=...) when navigating
     (function(){
-      var link = document.getElementById('btn-move');
-      if (!link) return;
-      var qs = window.location.search || '';
-      if (qs && qs !== '?') {
-        try {
-          var url = new URL(link.getAttribute('href'), window.location.href);
-          // Concatenate existing link query and current page query
-          var targetQs = url.search || '';
-          var combined = targetQs ? (targetQs + '&' + qs.slice(1)) : qs;
-          url.search = combined;
-          link.setAttribute('href', url.pathname + url.search + url.hash);
-        } catch (_) {
-          // Fallback: simple append
-          link.setAttribute('href', link.getAttribute('href') + qs);
+      function keepQs(id){
+        var link = document.getElementById(id);
+        if (!link) return;
+        var qs = window.location.search || '';
+        if (qs && qs !== '?') {
+          try {
+            var url = new URL(link.getAttribute('href'), window.location.href);
+            var targetQs = url.search || '';
+            var combined = targetQs ? (targetQs + '&' + qs.slice(1)) : qs;
+            url.search = combined;
+            link.setAttribute('href', url.pathname + url.search + url.hash);
+          } catch (_) {
+            link.setAttribute('href', link.getAttribute('href') + qs);
+          }
         }
       }
+      keepQs('btn-move');
+      keepQs('btn-devour');
     })();
   </script>
 </body>
