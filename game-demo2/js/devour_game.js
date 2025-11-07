@@ -114,10 +114,51 @@
     for (const p of players.values()) safeApplyPos(p);
   });
 
+  let gameStarted = false;
+
+  function showCountdownAndStart(){
+    const overlay = document.getElementById('countdownOverlay');
+    const numEl = document.getElementById('countdownNum');
+    const btn = document.getElementById('btnStart');
+    if (!overlay || !numEl) { gameStarted = true; if (btn) btn.disabled = true; return; }
+    if (btn) btn.disabled = true;
+    overlay.style.display = 'flex';
+    let n = 5;
+    numEl.textContent = String(n);
+    const timer = setInterval(() => {
+      n -= 1;
+      if (n <= 0){
+        clearInterval(timer);
+        overlay.style.display = 'none';
+        gameStarted = true;
+        appendDevourChat('遊戲開始！');
+        return;
+      }
+      numEl.textContent = String(n);
+    }, 1000);
+  }
+
+  // wire Start button
+  (function(){
+    const btn = document.getElementById('btnStart');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      if (gameStarted) return;
+      showCountdownAndStart();
+    });
+  })();
+
   function handleJoin(obj){
     const u = obj.user || {};
     const id = u && u.lineUserId ? String(u.lineUserId) : `${u.unitName}-${u.nickname}`;
     let p = players.get(id);
+
+    // Gate: after game started, new players cannot join
+    if (gameStarted && !p){
+      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 遊戲已開始，無法加入`);
+      return;
+    }
+
     if (!p){
       p = ensurePlayer(u);
       // place at random non-overlapping position
@@ -142,6 +183,10 @@
     }
     if (!p.alive){
       appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 已被淘汰，無法行動`);
+      return;
+    }
+    if (!gameStarted){
+      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 遊戲尚未開始，無法行動`);
       return;
     }
 
@@ -216,6 +261,18 @@
       li.innerHTML = `<span class="score-rank">${rank++}</span><span class="score-name">${escapeHtml(p.unitName)} - ${escapeHtml(p.nickname)}</span><span class="score-count">${p.eat||0}</span>`;
       scoreList.appendChild(li);
     }
+  }
+
+  function colorFromUnit(name){
+    const colors = [
+      { bg:'#ff6b6b', border:'#ff4d4d' }, // top-like
+      { bg:'#6bff95', border:'#3de477' }, // right-like
+      { bg:'#9ecbff', border:'#6ba8ff' }, // bottom-like
+      { bg:'#f9a8d4', border:'#f472b6' }, // left-like
+    ];
+    let h = 0; for (let i=0;i<name.length;i++){ h = ((h*31) + name.charCodeAt(i)) | 0; }
+    const idx = Math.abs(h) % colors.length;
+    return colors[idx];
   }
 
   let ws;
