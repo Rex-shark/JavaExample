@@ -35,7 +35,7 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
     public boolean canHandle(MessageContext ctx) {
         String t = norm(ctx.getText());
         return "help".equals(t) || "幫助".equals(t) || t.equals("上")
-                || t.equals("下")|| t.equals("左")|| t.equals("右");
+                || t.equals("下")|| t.equals("左")|| t.equals("右")|| t.equals("加入");
     }
 
     @Override
@@ -79,14 +79,38 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
                 return new TextMessage("您尚未註冊！" );
             }
 
+        }
+        if ("加入".equals(t) ) {
+            String roomId = "default";
+            Optional<LineBotUserModel> userOpt = lineBotUserService.getUserByLineUserId(ctx);
+            if (userOpt.isEmpty()) {
+                return new TextMessage("您尚未註冊！" );
+            }
+            LineBotUserModel user = userOpt.get();
+            System.out.println("找到使用者：" + user.getName() );
+            //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
+            GameMessageModel gameMessage = new GameMessageModel();
+            gameMessage.setText(t);
 
+            gameMessage.setType(GameMessageType.JOIN);
+            gameMessage.setStatus("1");
+
+            SocketMessageResponse socketResponse = new SocketMessageResponse();
+            socketResponse.setSuccess(true);
+            socketResponse.setRoomId(roomId);
+            socketResponse.setUser(user);
+            socketResponse.setGame(gameMessage);
+            socketResponse.setMessage("\uD83D\uDE0A");
+
+            wsHandler.sendToRoom(socketResponse);
+            return new TextMessage("已加入遊戲！");
         }
 //        if (t.startsWith("上")) {
 //            String dir = t.replaceFirst("^移動\\s*", "");
 //            if (dir.isBlank()) return new TextMessage("請輸入方向，例如：移動 北");
 //            return new TextMessage("已嘗試移動到：" + dir);
 //        }
-        System.out.println("\"SSS\" = " + "SSS");
+        System.out.println("ABC");
         return null;
     }
 
