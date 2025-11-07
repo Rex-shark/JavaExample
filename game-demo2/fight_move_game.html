@@ -181,6 +181,15 @@
     .legend-dot--bottom { background: #9ecbff; color: #6ba8ff; }
     .legend-dot--left { background: #f9a8d4; color: #f472b6; }
     .legend-note { font-size: 12px; opacity: .75; }
+
+    /* Start button */
+    .btn-start { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:6px 10px; border-radius:8px; cursor:pointer; }
+    .btn-start:hover { filter: brightness(1.08); }
+
+    /* Countdown overlay */
+    .countdown-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 60; }
+    .countdown-box { background: #0f172a; border: 1px solid #24314a; border-radius: 12px; padding: 20px 28px; box-shadow: 0 10px 30px rgba(0,0,0,.5); text-align: center; }
+    .countdown-num { font-size: 56px; font-weight: 800; letter-spacing: 2px; }
   </style>
 </head>
 
@@ -189,6 +198,7 @@
     <h1 style="margin:0;font-size:20px">fight_move_game</h1>
 
     <div class="hud">
+      <button id="btnStart" class="btn-start" type="button">開始</button>
       <div id="status" class="tag warn">Connecting...</div>
       <div class="tag">Room: <strong id="roomTag">default</strong></div>
       <div class="tag">WS: <span id="wsUrl">-</span></div>
@@ -226,6 +236,11 @@
 
   <!-- Win overlay (hidden by default, shown by JS) -->
   <div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle" style="display:none"></div>
+
+  <!-- Countdown overlay -->
+  <div id="countdownOverlay" class="countdown-overlay" role="dialog" aria-modal="true" aria-label="倒數">
+    <div class="countdown-box"><div id="countdownNum" class="countdown-num">5</div></div>
+  </div>
 
   <script src="js/app.js"></script>
 </body>

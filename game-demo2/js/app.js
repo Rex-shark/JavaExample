@@ -59,6 +59,37 @@
   const halfTarget = 10; // target size 20x20
   let gameOver = false;
   let lastCommander = { unitName: '', nickname: '' }; // set on latest WS move
+  let gameStarted = false; // require start before handling moves
+
+  function showCountdownAndStart(){
+    const overlay = document.getElementById('countdownOverlay');
+    const numEl = document.getElementById('countdownNum');
+    const btn = document.getElementById('btnStart');
+    if (!overlay || !numEl) { gameStarted = true; if (btn) btn.disabled = true; return; }
+    if (btn) btn.disabled = true;
+    overlay.style.display = 'flex';
+    let n = 5; numEl.textContent = String(n);
+    const timer = setInterval(()=>{
+      n -= 1;
+      if (n <= 0){
+        clearInterval(timer);
+        overlay.style.display = 'none';
+        gameStarted = true;
+        setStatus('Game Started', 'ok');
+        return;
+      }
+      numEl.textContent = String(n);
+    }, 1000);
+  }
+
+  (function(){
+    const btn = document.getElementById('btnStart');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      if (gameStarted) return;
+      showCountdownAndStart();
+    });
+  })();
 
   function randomInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
 
@@ -219,9 +250,14 @@
 
           // movement command when type === 'move'
           if (type === 'move' && typeof gText === 'string') {
-            cmd = gText;
-            // Remember commander for victory message
-            lastCommander = { unitName: u.unitName || '', nickname: u.nickname || '' };
+            if (!gameStarted) {
+              // gate movement until started
+              // optionally show a small chat hint
+              appendChat({ unitName: u.unitName, nickname: u.nickname, text: '遊戲尚未開始，無法行動' });
+            } else {
+              cmd = gText;
+              lastCommander = { unitName: u.unitName || '', nickname: u.nickname || '' };
+            }
           }
 
           // Build a simplified view for chat rendering
@@ -357,6 +393,7 @@
   window.addEventListener('keydown', (e) => {
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
       e.preventDefault();
+      if (!gameStarted) return; // block local move before start
       const map = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' };
       handleCommand(map[e.key]);
     }
