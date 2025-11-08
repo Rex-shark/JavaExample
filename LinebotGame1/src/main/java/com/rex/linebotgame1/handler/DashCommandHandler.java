@@ -26,7 +26,7 @@ public class DashCommandHandler  implements LineBotMessageHandler{
     public Message handle(MessageContext ctx) {
         String t = ctx.getText().trim();
         if ("-test".equalsIgnoreCase(t)) {
-            return new TextMessage("test!");
+            return new TextMessage("⛔What do you want to do?");
         }
         if (t.startsWith("-註冊")) {
             System.out.println("收到註冊指令！");

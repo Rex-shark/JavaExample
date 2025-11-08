@@ -6,8 +6,8 @@ import com.rex.linebotgame1.model.MessageContext;
 import com.rex.linebotgame1.repository.TistUserRepository;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -32,35 +32,57 @@ public class TistUserService {
                 .map(LineBotUserModel::new);
 
     }
+
+    /**
+     * 使用者註冊TistUser
+     * @param ctx
+     * @return
+     */
+    @Transactional
     public String registerTistUser(MessageContext ctx){
         String t = ctx.getText().trim();
         //驗證T的格式 必須是-註冊 然後一個空格 中間一個字串 再空格 在一個字串
         //例如: -註冊 T400 2400550，驗證通過並回傳TistUserModel物件，否則回傳null
         String[] parts = t.split(" ");
         if (parts.length != 3) {
-            return "註冊格式錯誤!必須是-註冊 TIST員工編號 精誠員工編號 ";
+            return "註冊格式錯誤❌必須是-註冊 TIST員工編號 精誠員工編號 ";
         }
 
         String tistId = parts[1];
         String systexId = parts[2];
         //檢查是否在建檔庫中有此人
-        Optional<TistUser> user = tistUserRepository.findByTistIdAndSystexId(tistId.toUpperCase(), systexId.toUpperCase());
+        Optional<TistUser> userOpt = tistUserRepository.findByTistIdAndSystexId(tistId.toUpperCase(), systexId.toUpperCase());
 
-        if (user.isEmpty()) {
+        if (userOpt.isEmpty()) {
             System.out.println("非資料庫內人員，無法註冊！");
-            return "查無此資料！";
+            return null;//不回覆註冊訊息，避免暴力測試
         }
+
+        //符合資料庫內人員，呼叫 line API 取得最新使用者資料
         Optional<LineBotUserModel> lineBotUserModel =  lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
 
         if (lineBotUserModel.isEmpty()) {
             System.out.println("line API 查無資料！");
-            return "查無此資料！";
+            return "請先加入好友，如有任何疑問，歡迎聯絡尾牙小組！" ;
         }
-        user.get().setLineId(lineBotUserModel.get().getLineUserId());
-        user.get().setNickname(lineBotUserModel.get().getNickname());
-        user.get().setImageUrl(lineBotUserModel.get().getImageUrl());
-        tistUserRepository.save(user.get());
-        return  user.get().getName()  +"，註冊成功！感謝您的參與！" ;
+        TistUser user = userOpt.get();
+        if (user.isRegister()) {
+            //已註冊過，判斷lineId是否相同，相同就更新URL跟暱稱，不同顯示該帳號已註冊
+            if (user.getLineId().equals(lineBotUserModel.get().getLineUserId())) {
+                user.setNickname(lineBotUserModel.get().getNickname());//TODO Rex 考慮是否要覆蓋暱稱
+                user.setImageUrl(lineBotUserModel.get().getImageUrl());
+                tistUserRepository.save(user);
+                return  user.getName()  +"，資料已更新❗" ;
+            }else{
+                return "此line帳號已註冊！如有任何疑問，歡迎聯絡尾牙小組❗" ;
+            }
+        }
+        user.setLineId(lineBotUserModel.get().getLineUserId());
+        user.setNickname(lineBotUserModel.get().getNickname());//TODO Rex 考慮是否要覆蓋暱稱
+        user.setImageUrl(lineBotUserModel.get().getImageUrl());
+        user.setRegister(true);
+        tistUserRepository.save(user);
+        return  user.getUnitName()+"-" +  user.getName()  +"，註冊成功❗感謝您的參與。" ;
 
     }
 }

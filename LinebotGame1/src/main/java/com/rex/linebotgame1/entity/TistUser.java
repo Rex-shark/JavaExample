@@ -47,6 +47,9 @@ public class TistUser {
     @Column(length = 255, columnDefinition = "varchar(255) COMMENT 'line圖像網址'")
     private String imageUrl;
 
+    @Column(nullable = false, columnDefinition = "boolean DEFAULT false COMMENT '是否有手動註冊'")
+    private boolean isRegister ;
+
     @JsonIgnore
     @Column(nullable = false)
     private Long createdUserId;

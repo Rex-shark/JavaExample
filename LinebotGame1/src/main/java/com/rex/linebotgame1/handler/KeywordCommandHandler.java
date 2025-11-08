@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@Order(1) // 次優先：關鍵字
+@Order(2) // 次優先：關鍵字
 public class KeywordCommandHandler   implements LineBotMessageHandler{
 
     @Resource
@@ -55,43 +55,38 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
                 case "右" -> t = "right";
             }
             Optional<LineBotUserModel> userOpt = lineBotUserService.getUserByLineUserId(ctx);
-            if (userOpt.isPresent()) {
-                LineBotUserModel user = userOpt.get();
-                System.out.println("找到使用者：" + user.getName() );
-                //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
-                GameMessageModel gameMessage = new GameMessageModel();
-                gameMessage.setText(t);
-
-                gameMessage.setType(GameMessageType.MOVE);
-                gameMessage.setStatus("1");
-
-                SocketMessageResponse socketResponse = new SocketMessageResponse();
-                socketResponse.setSuccess(true);
-                socketResponse.setRoomId(roomId);
-                socketResponse.setUser(user);
-                socketResponse.setGame(gameMessage);
-                socketResponse.setMessage("\uD83D\uDE0A");
-
-                wsHandler.sendToRoom(socketResponse);
-                return new TextMessage(user.getNickname()+" 移動：" + t);
-            } else {
+            if (userOpt.isEmpty()) {
                 System.out.println("找不到這個 userId");
-                return new TextMessage("您尚未註冊！" );
+                return new TextMessage("您尚未註冊❗" );
             }
+            LineBotUserModel user = userOpt.get();
+            //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
+            GameMessageModel gameMessage = new GameMessageModel();
+            gameMessage.setText(t);
+            gameMessage.setType(GameMessageType.MOVE);
+            gameMessage.setStatus("1");
 
+            SocketMessageResponse socketResponse = new SocketMessageResponse();
+            socketResponse.setSuccess(true);
+            socketResponse.setRoomId(roomId);
+            socketResponse.setUser(user);
+            socketResponse.setGame(gameMessage);
+            socketResponse.setMessage("\uD83D\uDE0A");
+
+            wsHandler.sendToRoom(socketResponse);
+            return new TextMessage(user.getNickname()+" 移動：" + t);//TODO Rex null比較好
         }
         if ("加入".equals(t) ) {
             String roomId = "default";
             Optional<LineBotUserModel> userOpt = lineBotUserService.getUserByLineUserId(ctx);
             if (userOpt.isEmpty()) {
-                return new TextMessage("您尚未註冊！" );
+                return new TextMessage("您尚未註冊❗" );
             }
             LineBotUserModel user = userOpt.get();
             System.out.println("找到使用者：" + user.getName() );
             //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
             GameMessageModel gameMessage = new GameMessageModel();
             gameMessage.setText(t);
-
             gameMessage.setType(GameMessageType.JOIN);
             gameMessage.setStatus("1");
 
@@ -103,14 +98,14 @@ public class KeywordCommandHandler   implements LineBotMessageHandler{
             socketResponse.setMessage("\uD83D\uDE0A");
 
             wsHandler.sendToRoom(socketResponse);
-            return new TextMessage("已加入遊戲！");
+            return new TextMessage( user.getName()+"已加入遊戲❗");
         }
 //        if (t.startsWith("上")) {
 //            String dir = t.replaceFirst("^移動\\s*", "");
 //            if (dir.isBlank()) return new TextMessage("請輸入方向，例如：移動 北");
 //            return new TextMessage("已嘗試移動到：" + dir);
 //        }
-        System.out.println("ABC");
+
         return null;
     }
 

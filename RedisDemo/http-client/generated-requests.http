@@ -3,8 +3,8 @@ POST http://localhost:8080/redis/set
 Content-Type: application/json
 
 {
-  "key": "K2",
-  "value": "V2"
+  "key": "K21",
+  "value": "V21"
 }
 
 

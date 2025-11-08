@@ -1,11 +1,6 @@
 package com.rex.linebotgame1.controller;
 
-import com.linecorp.bot.client.base.Result;
-import com.linecorp.bot.messaging.client.MessagingApiClient;
-import com.linecorp.bot.messaging.model.Message;
-import com.linecorp.bot.messaging.model.PushMessageRequest;
-import com.linecorp.bot.messaging.model.PushMessageResponse;
-import com.linecorp.bot.messaging.model.TextMessage;
+
 import com.rex.linebotgame1.enums.GameMessageType;
 import com.rex.linebotgame1.handler.GameWebSocketHandler;
 import com.rex.linebotgame1.model.GameMessageModel;
@@ -14,16 +9,14 @@ import com.rex.linebotgame1.model.MessageContext;
 import com.rex.linebotgame1.model.SocketMessageResponse;
 import com.rex.linebotgame1.service.LineBotUserService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+
 
 
 @RestController
@@ -31,11 +24,16 @@ import java.util.concurrent.ExecutionException;
 public class LinebotMessageDemoController {
 
     @Resource
-    private  GameWebSocketHandler wsHandler;
+    GameWebSocketHandler wsHandler;
 
     @Resource
     LineBotUserService lineBotUserService;
 
+    /**
+     * 利用API模擬linebot發送遊戲指令
+     * @param body
+     * @return
+     */
     @PostMapping("/game-websocket")
     @ResponseBody
     public ResponseEntity<String> gameWebsocket(@RequestBody Map<String, String> body) {
@@ -45,8 +43,7 @@ public class LinebotMessageDemoController {
         String roomId = body.get("roomId");
         String groupId = body.get("groupId");
 
-        System.out.println("body = " + body);
-
+        //System.out.println("body = " + body);
 
         MessageContext ctx = MessageContext.builder()
                 .replyToken("")
@@ -60,17 +57,20 @@ public class LinebotMessageDemoController {
             LineBotUserModel user = userOpt.get();
             System.out.println("找到使用者：" + user.getName() );
             //lineBotApiService.getLintBotUser(ctx); // 呼叫 API 取得最新使用者資料
-            GameMessageModel gameMessage = new GameMessageModel();
-            gameMessage.setText(text);
-            gameMessage.setType(GameMessageType.from(type));
-            gameMessage.setStatus("1");
 
-            SocketMessageResponse socketResponse = new SocketMessageResponse();
-            socketResponse.setSuccess(true);
-            socketResponse.setRoomId(roomId);
-            socketResponse.setUser(user);
-            socketResponse.setGame(gameMessage);
-            socketResponse.setMessage("\uD83D\uDE0A");
+            GameMessageModel gameMessage = GameMessageModel.builder()
+                    .type(GameMessageType.from(type))
+                    .text(text)
+                    .status("1")
+                    .build();
+
+            SocketMessageResponse socketResponse = SocketMessageResponse.builder()
+                    .success(true)
+                    .roomId(roomId)
+                    .user(user)
+                    .game(gameMessage)
+                    .message("\uD83D\uDE0A")
+                    .build();
 
             wsHandler.sendToRoom(socketResponse);
             return ResponseEntity.ok(user.getNickname()+" 發送遊戲指令：" + text);

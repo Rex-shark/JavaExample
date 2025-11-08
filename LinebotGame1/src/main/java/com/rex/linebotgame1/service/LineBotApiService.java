@@ -17,6 +17,11 @@ public class LineBotApiService {
     private String channelToken;
 
 
+    /**
+     * 透過Line Messaging API取得使用者資料
+     * @param ctx
+     * @return
+     */
     public Optional<LineBotUserModel> getLintBotUser(MessageContext ctx) {
         String userId = ctx.getUserId();
         System.out.println("API userId = " + userId);
@@ -34,10 +39,10 @@ public class LineBotApiService {
                 model.setNickname(userProfile.displayName());
                 model.setLineUserId(userProfile.userId());
                 model.setMessage(userProfile.statusMessage());
-                System.out.println("String.valueOf(userProfile.pictureUrl()) = " + String.valueOf(userProfile.pictureUrl()));
-                System.out.println("userProfile.displayName() = " + userProfile.displayName());
-                System.out.println("userProfile.userId() = " + userProfile.userId());
-                System.out.println("userProfile.statusMessage() = " + userProfile.statusMessage());
+//                System.out.println("String.valueOf(userProfile.pictureUrl()) = " + String.valueOf(userProfile.pictureUrl()));
+//                System.out.println("userProfile.displayName() = " + userProfile.displayName());
+//                System.out.println("userProfile.userId() = " + userProfile.userId());
+//                System.out.println("userProfile.statusMessage() = " + userProfile.statusMessage());
                 return Optional.of(model);
             }
         } catch (Exception e) {
