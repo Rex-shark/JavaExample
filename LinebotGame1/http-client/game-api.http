@@ -1,0 +1,3 @@
+###依照ID 發訊息 Rex
+GET http://localhost:8080/game/draw_game?id=1
+
