@@ -23,9 +23,9 @@
     .main-row { display: grid; grid-template-columns: 300px minmax(360px, 640px) 320px; gap: 18px; align-items: start; width: min(100%, 1200px); margin-inline: auto; }
 
     /* Stage sizing: fit the center column, avoid overflow overlapping side panels */
-    .stage { width: 100%; max-width: 640px; height: min(80vmin, 640px); box-sizing: border-box; background: #0d1524; border: 2px solid #2a3347; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); position: relative; overflow: hidden; }
-    .grid { position:absolute; inset:0; background-image: linear-gradient(#1d243333 1px, transparent 1px), linear-gradient(90deg, #1d243333 1px, transparent 1px); background-size: 40px 40px; }
-    .player { position:absolute; top:50%; left:50%; width: 22px; height: 22px; margin-left:-11px; margin-top:-11px; border-radius: 50%; border:2px solid #fff2; box-shadow: 0 4px 10px rgba(0,0,0,.45); transform: translate(0,0); transition: transform 80ms ease-out; background-size: cover; background-position: center; background-repeat: no-repeat; }
+    .stage { width: 100%; max-width: 640px; aspect-ratio:1/1; box-sizing: border-box; background: #0d1524; border: 2px solid #2a3347; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); position: relative; overflow: hidden; }
+    .grid { position:absolute; inset:0; pointer-events:none; }
+    .player { position:absolute; border-radius:50%; border:2px solid #fff2; box-shadow: 0 4px 10px rgba(0,0,0,.45); background-size: cover; background-position: center; background-repeat: no-repeat; transition: top 120ms ease, left 120ms ease; }
 
     /* Scoreboard */
     .score { background: #0d1524; border: 2px solid #2a3347; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); }
@@ -67,11 +67,11 @@
 
     /* Cells layer for poison ring */
     .cells-layer { position:absolute; inset:0; pointer-events:none; }
-    .cell { position:absolute; top:50%; left:50%; width:20px; height:20px; margin-left:-10px; margin-top:-10px; border-radius:4px; box-sizing:border-box; border:1px solid transparent; }
-    .cell--warn { animation: blinkWarn 0.3s linear infinite alternate; border-color:#ffcc66aa; }
+    .cell { position:absolute; box-sizing:border-box; border:1px solid rgba(255,255,255,.04); }
+    .cell.cell--warn { animation: blinkWarn 0.3s linear infinite alternate; border-color:#ffcc66aa; background:#ffcc6640; }
     @keyframes blinkWarn { from { background:#ffcc6622; } to { background:#ffcc6699; } }
-    .cell--toxic { background:#a00030cc; border-color:#ff3b58; }
-    .cell--toxic::after { content:'✕'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ffd0da; font-weight:800; font-size:14px; }
+    .cell.cell--toxic { background:#a00030cc; border-color:#ff3b58; }
+    .cell.cell--toxic::after { content:'✕'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ffd0da; font-weight:800; font-size:0.8em; }
 
     /* Win overlay (enlarged) */
     .win-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 70; }
