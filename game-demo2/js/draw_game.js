@@ -21,6 +21,9 @@
   const winOverlay = document.getElementById('winOverlayDraw');
   const winList = document.getElementById('winList');
   const btnReplay = document.getElementById('btnReplay');
+  const winnerBoxDraw = document.getElementById('winnerBoxDraw');
+  const noWinnerDraw = document.getElementById('noWinnerDraw');
+  const answerBoxDraw = document.getElementById('answerBoxDraw');
 
   if (!canvas) return;
 
@@ -48,7 +51,7 @@
   let countdown = 0; // seconds
   let countdownTimer = null;
   let revealTimer = null;
-  let baseCountdown = 120; // initial total seconds default
+  let baseCountdown = 80; // initial total seconds default
   const revealInterval = 20; // show next prompt every 20s
 
   // Guess tracking
@@ -59,26 +62,28 @@
 
   // Canvas drawing setup
   const ctx = canvas.getContext('2d');
+  let currentDpr = 1;
   function resizeCanvas(){
-    const parent = canvas.parentElement;
+    const parent = canvas.parentElement; // .canvas-stage
     const rect = parent.getBoundingClientRect();
-    // Shorter canvas: cap at ~520px
-    const size = Math.min(rect.width, rect.height, 520);
-    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const size = Math.floor(Math.min(rect.width, rect.height));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    currentDpr = dpr;
     ctx.setTransform(1,0,0,1,0,0);
-    canvas.width = Math.max(1, Math.floor(size * dpr));
-    canvas.height = Math.max(1, Math.floor(size * dpr));
-    canvas.style.width = Math.max(1, Math.floor(size)) + 'px';
-    canvas.style.height = Math.max(1, Math.floor(size)) + 'px';
+    canvas.width = Math.max(1, Math.round(size * dpr));
+    canvas.height = Math.max(1, Math.round(size * dpr));
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
     ctx.scale(dpr, dpr);
     redrawBg();
   }
   function redrawBg(){
-    // white background
     ctx.globalCompositeOperation = 'source-over';
-    const parent = canvas.parentElement.getBoundingClientRect();
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0,0,parent.width,parent.height);
+    const w = canvas.width / currentDpr;
+    const h = canvas.height / currentDpr;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillRect(0,0,w,h);
   }
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
@@ -186,11 +191,54 @@
     const answered = rows.filter(r => r.adjusted != null);
     answered.sort((a,b)=> a.adjusted - b.adjusted);
 
-    let display = [];
+    let display; // linter: avoid redundant initialization
     if (answered.length <= 5){ display = answered; }
     else {
       const cutScore = answered[4].adjusted; // 0-based index for 5th place
       display = answered.filter(r => r.adjusted <= cutScore);
+    }
+
+    // Answer box handling (always show if we have an answer)
+    if (answerBoxDraw){
+      const hasAns = !!(drawAnswer && String(drawAnswer).trim());
+      if (hasAns){
+        answerBoxDraw.style.display = 'flex';
+        answerBoxDraw.innerHTML = `<span class="answer-label">正確答案</span> <span class="answer-text">${escapeHtml(String(drawAnswer))}</span>`;
+      } else {
+        answerBoxDraw.style.display = 'none';
+        answerBoxDraw.textContent = '';
+      }
+    }
+
+    // Winner box handling
+    if (winnerBoxDraw && noWinnerDraw){
+      winnerBoxDraw.innerHTML='';
+      noWinnerDraw.style.display='none';
+      if (answered.length === 0){
+        winnerBoxDraw.style.display='none';
+        noWinnerDraw.style.display='block';
+      } else {
+        const first = answered[0];
+        const snapFirst = userSnapshot.get(first.key) || { unitName:'', nickname:'', imageUrl:'' };
+        winnerBoxDraw.style.display='flex';
+        const avatar = document.createElement('div');
+        avatar.className='winner-avatar';
+        if (snapFirst.imageUrl && snapFirst.imageUrl.trim()){
+          avatar.style.backgroundImage = `url("${snapFirst.imageUrl.replace(/"/g,'%22')}")`;
+          avatar.textContent='';
+        } else {
+          avatar.textContent = (snapFirst.nickname||'?').trim().charAt(0).toUpperCase();
+        }
+        const nm = document.createElement('div');
+        nm.className='winner-name';
+        nm.textContent = `${snapFirst.unitName} - ${snapFirst.nickname}`;
+        const tm = document.createElement('div');
+        tm.className='winner-time';
+        tm.textContent = `用時 ${first.time}秒 + 罰時 ${first.wrong*5}秒 = ${first.adjusted}秒`;
+        winnerBoxDraw.appendChild(avatar);
+        winnerBoxDraw.appendChild(nm);
+        winnerBoxDraw.appendChild(tm);
+      }
     }
 
     if (winOverlay && winList){
