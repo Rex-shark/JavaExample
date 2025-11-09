@@ -32,16 +32,25 @@
     .score-header { padding: 10px 12px; border-bottom: 1px solid #2a3347; font-weight: 600; background: #101a2b; }
     .score-list { list-style:none; margin:0; padding: 8px; max-height: min(80vmin, 560px); overflow:auto; }
     .score-item { display:flex; align-items:center; gap:8px; padding: 6px 8px; border-radius:8px; border:1px solid #22314a; background:#111a2a; margin-bottom: 8px; }
-    .score-item.gray { opacity:.5; }
-    .score-rank { width: 22px; text-align:center; opacity:.8; }
-    .score-name { flex:1; }
-    .score-count { font-weight:700; }
+    .score-item .avatar { width:24px; height:24px; flex:0 0 24px; border-radius:50%; background:#1b2741 center/cover no-repeat; border:1px solid #2a3347; color:#cbd5e1; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+    /* Gray out dead players */
+    .score-item.gray { opacity:.6; filter: grayscale(0.8); }
+    .score-item.gray .avatar { filter: grayscale(1) brightness(0.8); }
+    .score-item.gray .score-name, .score-item.gray .score-count { opacity:.75; }
+    /* Rank badge for kill ranking */
+    .rank-badge { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#0f0f12; }
+    .rank-1 { background:linear-gradient(135deg,#facc15,#e3a008); box-shadow:0 0 6px rgba(250,204,21,.6); }
+    .rank-2 { background:linear-gradient(135deg,#cbd5e1,#94a3b8); }
+    .rank-3 { background:linear-gradient(135deg,#fda4af,#fb7185); }
+    .rank-badge span { filter:drop-shadow(0 1px 1px rgba(0,0,0,.4)); }
 
     /* Chat */
     .chat { background: #0d1524; border: 2px solid #2a3347; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); display:flex; flex-direction:column; height: min(80vmin, 560px); }
     .chat-header { padding: 10px 12px; border-bottom: 1px solid #2a3347; font-weight: 600; background: #101a2b; }
     .chat-body { flex: 1; overflow: auto; padding: 10px 12px; }
     .chat-msg { font-size: 13px; line-height: 1.5; padding: 6px 8px; background:#111a2a; border:1px solid #22314a; border-radius:6px; margin-bottom: 8px; }
+    /* system chat variant (align with draw_game) */
+    .chat-msg.chat-msg--system { background:#3b2a12; border-color:#73511d; }
 
     .back { margin-top: 6px; text-align: center; }
     .back a { color: #9ecbff; text-decoration: none; }
@@ -64,14 +73,18 @@
     .cell--toxic { background:#a00030cc; border-color:#ff3b58; }
     .cell--toxic::after { content:'✕'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ffd0da; font-weight:800; font-size:14px; }
 
-    /* Win overlay */
+    /* Win overlay (enlarged) */
     .win-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 70; }
-    .win-box { background: #0f172a; border: 1px solid #24314a; border-radius: 12px; padding: 16px 18px; width: min(90vw, 420px); box-shadow: 0 10px 30px rgba(0,0,0,.5); text-align: center; }
-    .win-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-    .win-sub { opacity: .95; margin-bottom: 10px; }
-    .win-list { text-align:left; background:#0e1527; border:1px solid #22314a; border-radius:8px; padding:8px 10px; max-height: 40vh; overflow:auto; }
-    .win-actions { margin-top: 12px; }
-    .win-actions button { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .win-box { background: #0f172a; border: 1px solid #24314a; border-radius: 18px; padding: 24px 26px; width: min(92vw, 480px); box-shadow: 0 14px 38px rgba(0,0,0,.55); text-align: center; }
+    .win-title { font-size: 28px; font-weight: 800; margin-bottom: 10px; letter-spacing:1px; }
+    .win-sub { opacity: .95; margin-bottom: 14px; font-size:16px; }
+    .winner-box { display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:16px; }
+    .winner-avatar { width:80px; height:80px; border-radius:50%; background:#1b2741 center/cover no-repeat; border:3px solid #facc15; box-shadow:0 0 0 3px #facc1522, 0 8px 18px rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color:#e2e8f0; }
+    .winner-name { font-size:20px; font-weight:700; }
+    .winner-kills { font-size:14px; opacity:.85; }
+    .win-list { text-align:left; background:#0e1527; border:1px solid #22314a; border-radius:12px; padding:12px 14px; max-height: 40vh; overflow:auto; font-size:14px; }
+    .win-actions { margin-top: 18px; display:flex; justify-content:center; gap:14px; }
+    .win-actions button { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:10px 20px; border-radius:10px; cursor:pointer; font-size:15px; font-weight:600; }
     .win-actions button:hover { filter: brightness(1.1); }
   </style>
 </head>
@@ -85,6 +98,7 @@
       <div id="status" class="tag warn">Connecting...</div>
       <div class="tag">Room: <strong id="roomTag">default</strong></div>
       <div class="tag">WS: <span id="wsUrl">-</span></div>
+      <div class="tag">剩餘: <span id="aliveCount">0/0</span></div>
     </div>
 
     <div class="main-row">
@@ -117,12 +131,12 @@
   <div id="winOverlayDevour" class="win-overlay" role="dialog" aria-modal="true" aria-label="勝利" style="display:none">
     <div class="win-box">
       <div class="win-title">勝利者</div>
-      <div class="win-sub">恭喜以下玩家獲勝！</div>
+      <div class="win-sub">恭喜獲勝！</div>
+      <div id="winnerBox" class="winner-box"></div>
       <div class="win-list">
         <!-- Winner list injected by JS -->
       </div>
       <div class="win-actions">
-        <button id="btnShare">分享連結</button>
         <button id="btnReplay">再玩一次</button>
       </div>
     </div>

@@ -6,6 +6,7 @@
   const wsUrlEl = document.getElementById('wsUrl');
   const chatBody = document.getElementById('chatBody');
   const scoreList = document.getElementById('scoreList');
+  const aliveCountEl = document.getElementById('aliveCount');
 
   if (!stage) return;
 
@@ -38,7 +39,7 @@
     };
   }
 
-  // players store: key = lineUserId (or composite), value = { x, y, el, unitName, nickname, alive, eat }
+  // players store: key = lineUserId (or composite), value = { x, y, el, unitName, nickname, imageUrl, alive, eat }
   const players = new Map();
 
   function setStatus(text, cls){
@@ -57,6 +58,50 @@
     const backend = qs('backend') || `${location.hostname}:8080`;
     return `${scheme}://${backend}/ws/game?id=${encodeURIComponent(roomId)}`;
   }
+
+  // Chat helpers (with avatar like draw_game)
+  function appendChat(view){
+    if (!chatBody || !view) return;
+    const item = document.createElement('div');
+    item.className = 'chat-msg' + (view.system ? ' chat-msg--system' : '');
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar' + (!view.imageUrl ? ' avatar--fallback' : '');
+    if (view.system){
+      avatar.textContent = 'ℹ';
+    } else if (view.imageUrl && String(view.imageUrl).trim()){
+      const url = String(view.imageUrl).trim().replace(/"/g, '%22');
+      avatar.style.backgroundImage = `url("${url}")`;
+    } else {
+      const initial = (view.nickname || '?').trim().charAt(0).toUpperCase();
+      avatar.textContent = initial || '?';
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    const header = document.createElement('div');
+    header.className = 'bubble-header';
+    if (view.system){
+      header.innerHTML = `<strong>系統</strong>`;
+    } else {
+      header.innerHTML = `<strong>${escapeHtml(view.unitName||'')} - ${escapeHtml(view.nickname||'')}</strong>`;
+    }
+
+    const body = document.createElement('div');
+    body.className = 'bubble-body';
+    body.innerHTML = `${escapeHtml(view.text||'')}`;
+
+    bubble.appendChild(header);
+    bubble.appendChild(body);
+
+    item.appendChild(avatar);
+    item.appendChild(bubble);
+
+    chatBody.appendChild(item);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+  function appendSystem(text){ appendChat({ system:true, text }); }
 
   // create or get player element
   function ensurePlayer(user){
@@ -78,7 +123,7 @@
       el.style.top = '50%';
       el.style.left = '50%';
       stage.appendChild(el);
-      p = { x: 0, y: 0, el, unitName: user.unitName||'', nickname: user.nickname||'', alive: true, eat: 0 };
+      p = { x: 0, y: 0, el, unitName: user.unitName||'', nickname: user.nickname||'', imageUrl: user.imageUrl||'', alive: true, eat: 0 };
       players.set(id, p);
     }
     return p;
@@ -131,7 +176,7 @@
         clearInterval(timer);
         overlay.style.display = 'none';
         gameStarted = true;
-        appendDevourChat('遊戲開始！');
+        appendSystem('遊戲開始！');
         return;
       }
       numEl.textContent = String(n);
@@ -155,7 +200,7 @@
 
     // Gate: after game started, new players cannot join
     if (gameStarted && !p){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 遊戲已開始，無法加入`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '遊戲已開始，無法加入' });
       return;
     }
 
@@ -164,12 +209,14 @@
       // place at random non-overlapping position
       const pos = randomNonOverlapPos();
       p.x = pos.x; p.y = pos.y; safeApplyPos(p);
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 加入了遊戲`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '加入了遊戲' });
       renderScore();
+      updateAliveCount();
     } else if (!p.alive) {
       // Eliminated players cannot rejoin
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 已被淘汰，無法重新加入`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '已被淘汰，無法重新加入' });
     }
+    updateAliveCount();
   }
 
   // Poison ring implementation
@@ -279,15 +326,16 @@
   }
 
   function eliminatePlayersOnCell(cell){
-    for (const [id, p] of players){
+    for (const [_id, p] of players){
       if (!p.alive) continue;
       if (Math.abs(cell.x - p.x) < poison.cellSize/2 && Math.abs(cell.y - p.y) < poison.cellSize/2){
         // eliminate
         p.alive = false;
         if (p.el && p.el.parentNode) { p.el.parentNode.removeChild(p.el); }
         p.el = null;
-        appendDevourChat(`${p.unitName || ''} - ${p.nickname || ''} 被毒圈吞噬`);
+        appendChat({ unitName: p.unitName, nickname: p.nickname, imageUrl: p.imageUrl, text: '被毒圈吞噬' });
         renderScore();
+        updateAliveCount();
       }
     }
   }
@@ -312,7 +360,7 @@
     }
     // block entry if next cell is toxic
     if (isToxicAt(next.x, next.y)){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 試圖進入毒圈被阻擋`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '試圖進入毒圈被阻擋' });
       return; // skip move
     }
     // perform original move flow (will also check collisions)
@@ -339,6 +387,9 @@
 
   function checkVictory(){
     if (gameOver) return;
+    // ensure game started and at least two players have joined before checking victory
+    if (!gameStarted) return;
+    if (players.size < 2) return;
     const alive = Array.from(players.values()).filter(p => p.alive);
     if (alive.length === 1){
       gameOver = true;
@@ -351,26 +402,41 @@
     if (!overlay) return;
     const listBox = overlay.querySelector('.win-list');
     if (listBox) listBox.innerHTML = '';
+    const winnerBox = document.getElementById('winnerBox');
+    if (winnerBox){
+      winnerBox.innerHTML='';
+      const wAvatar = document.createElement('div');
+      wAvatar.className='winner-avatar';
+      if (winner.imageUrl && winner.imageUrl.trim()){
+        wAvatar.style.backgroundImage = `url("${winner.imageUrl.trim().replace(/"/g,'%22')}")`;
+        wAvatar.textContent='';
+      } else {
+        wAvatar.textContent = (winner.nickname||'?').trim().charAt(0).toUpperCase();
+      }
+      const wName = document.createElement('div'); wName.className='winner-name'; wName.textContent = `${winner.unitName} - ${winner.nickname}`;
+      const wKills = document.createElement('div'); wKills.className='winner-kills'; wKills.textContent = `擊殺: ${winner.eat||0}`;
+      winnerBox.appendChild(wAvatar);
+      winnerBox.appendChild(wName);
+      winnerBox.appendChild(wKills);
+    }
 
-    // Winner info
+    // Winner info list (retained for compatibility):
     const wDiv = document.createElement('div');
     wDiv.innerHTML = `<strong>獲勝者:</strong> ${escapeHtml(winner.unitName)} ${escapeHtml(winner.nickname)} (擊殺:${winner.eat||0})`;
     if (listBox) listBox.appendChild(wDiv);
 
-    // Top killers (>=1) - may include winner again, so exclude winner then re-add if multiple top
+    // Top killers (>=1)
     const all = Array.from(players.values());
     const maxKill = Math.max(0, ...all.map(p => p.eat||0));
     if (maxKill >= 1){
       const tops = all.filter(p => (p.eat||0) === maxKill);
-      // Remove winner from top list if present to avoid duplicate label; but spec says if multiple, show all
-      // We'll show a separate block for 殺敵王; list all with maxKill.
       const header = document.createElement('div');
-      header.style.marginTop = '6px';
+      header.style.marginTop = '10px';
       header.innerHTML = `<strong>殺敵王 (擊殺數:${maxKill}):</strong>`;
       if (listBox) listBox.appendChild(header);
       const ul = document.createElement('ul');
-      ul.style.paddingLeft = '18px';
-      ul.style.margin = '4px 0 0 0';
+      ul.style.paddingLeft = '20px';
+      ul.style.margin = '6px 0 0 0';
       for (const p of tops){
         const li = document.createElement('li');
         li.textContent = `${p.unitName} ${p.nickname}`;
@@ -381,22 +447,10 @@
 
     overlay.style.display = 'flex';
 
-    // Stop poison loop
     if (poison.timer) { clearTimeout(poison.timer); }
 
     const btnReplay = document.getElementById('btnReplay');
     if (btnReplay){ btnReplay.onclick = () => window.location.reload(); }
-    const btnShare = document.getElementById('btnShare');
-    if (btnShare){
-      btnShare.onclick = () => {
-        try {
-          navigator.clipboard.writeText(window.location.href);
-          appendDevourChat('已複製分享連結');
-        } catch(_) {
-          appendDevourChat('無法複製分享連結');
-        }
-      };
-    }
   }
 
   // Insert victory checks where players can die or be eaten
@@ -406,27 +460,21 @@
     checkVictory();
   };
 
-  const _origHandleMove = handleMove;
-  handleMove = function(obj, dir){
-    _origHandleMove(obj, dir);
-    checkVictory();
-  };
-
   function handleMove(obj, dir){
     const u = obj.user || {};
     const id = u && u.lineUserId ? String(u.lineUserId) : `${u.unitName}-${u.nickname}`;
     let p = players.get(id);
     if (!p){
       // not joined yet
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 尚未加入遊戲`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '尚未加入遊戲' });
       return;
     }
     if (!p.alive){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 已被淘汰，無法行動`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '已被淘汰，無法行動' });
       return;
     }
     if (!gameStarted){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 遊戲尚未開始，無法行動`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '遊戲尚未開始，無法行動' });
       return;
     }
 
@@ -452,8 +500,11 @@
         if (other.el && other.el.parentNode) { other.el.parentNode.removeChild(other.el); }
         other.el = null;
         p.eat = (p.eat || 0) + 1;
-        appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 吞噬了 ${other.unitName || ''} - ${other.nickname || ''}`);
+        appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: `吞噬了 ${other.unitName || ''} - ${other.nickname || ''}` });
         renderScore();
+        // check victory only when an elimination actually happened
+        checkVictory();
+        updateAliveCount();
       }
     }
   }
@@ -463,26 +514,23 @@
     const id = u && u.lineUserId ? String(u.lineUserId) : `${u.unitName}-${u.nickname}`;
     const p = players.get(id);
     if (!p){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 尚未加入遊戲`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '尚未加入遊戲' });
       return;
     }
     if (!p.alive){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''} 已被淘汰，無法發言`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: '已被淘汰，無法發言' });
       return;
     }
     if (text && String(text).trim()){
-      appendDevourChat(`${u.unitName || ''} - ${u.nickname || ''}: ${String(text)}`);
+      appendChat({ unitName: u.unitName, nickname: u.nickname, imageUrl: u.imageUrl, text: String(text) });
     }
   }
 
-  // chat helper
-  function appendDevourChat(text){
-    if (!chatBody) return;
-    const item = document.createElement('div');
-    item.className = 'chat-msg';
-    item.textContent = String(text == null ? '' : text);
-    chatBody.appendChild(item);
-    chatBody.scrollTop = chatBody.scrollHeight;
+  function updateAliveCount(){
+    if (!aliveCountEl) return;
+    const total = players.size;
+    let alive = 0; for (const p of players.values()) if (p.alive) alive++;
+    aliveCountEl.textContent = `${alive}/${total}`;
   }
 
   // scoreboard renderer
@@ -490,15 +538,61 @@
     if (!scoreList) return;
     const arr = Array.from(players.values());
     arr.sort((a,b)=>{
-      if (a.alive !== b.alive) return a.alive ? -1 : 1; // alive first
-      return (b.eat||0) - (a.eat||0);
+      const ka = a.eat||0; const kb = b.eat||0;
+      if (kb !== ka) return kb - ka; // higher kills first
+      if (a.alive !== b.alive) return a.alive ? -1 : 1; // among same kills, alive first
+      // stable fallback by unitName then nickname to avoid random jitter
+      const unA = (a.unitName||'').localeCompare(b.unitName||'');
+      if (unA !== 0) return unA;
+      return (a.nickname||'').localeCompare(b.nickname||'');
     });
     scoreList.innerHTML = '';
     let rank = 1;
+    // compute kill ranking (consider all players by eat count desc)
+    const killRanked = Array.from(players.values()).slice().sort((a,b)=>(b.eat||0)-(a.eat||0));
+    const rankMap = new Map();
+    let currentRank = 0; let lastKills = null;
+    for (const p of killRanked){
+      const k = p.eat||0;
+      if (lastKills === null || k !== lastKills){ currentRank++; lastKills = k; }
+      rankMap.set(p, currentRank); // 1-based rank groups by kill count
+    }
     for (const p of arr){
       const li = document.createElement('li');
       li.className = 'score-item' + (p.alive ? '' : ' gray');
-      li.innerHTML = `<span class="score-rank">${rank++}</span><span class="score-name">${escapeHtml(p.unitName)} - ${escapeHtml(p.nickname)}</span><span class="score-count">${p.eat||0}</span>`;
+      // avatar
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      if (p.imageUrl && p.imageUrl.trim()){
+        avatar.style.backgroundImage = `url("${p.imageUrl.trim().replace(/"/g,'%22')}")`;
+      } else {
+        avatar.textContent = (p.nickname||'?').trim().charAt(0).toUpperCase();
+      }
+      // rank badge (top 3 by kills only if kills > 0)
+      let badge = null;
+      const killRank = rankMap.get(p);
+      if (killRank && killRank <= 3 && (p.eat||0) > 0){
+        badge = document.createElement('div');
+        badge.className = 'rank-badge rank-' + killRank;
+        const span = document.createElement('span');
+        span.textContent = killRank === 1 ? '🥇' : (killRank === 2 ? '🥈' : '🥉');
+        badge.appendChild(span);
+      }
+      const metaWrap = document.createElement('div');
+      metaWrap.style.display='flex';
+      metaWrap.style.flex='1';
+      metaWrap.style.alignItems='center';
+      metaWrap.style.gap='6px';
+      // rank/name/count
+      const rankSpan = document.createElement('span'); rankSpan.className='score-rank'; rankSpan.textContent = String(rank++);
+      const nameSpan = document.createElement('span'); nameSpan.className='score-name'; nameSpan.textContent = `${p.unitName} - ${p.nickname}`;
+      const countSpan = document.createElement('span'); countSpan.className='score-count'; countSpan.textContent = String(p.eat||0);
+      if (badge){ metaWrap.appendChild(badge); }
+      metaWrap.appendChild(rankSpan);
+      metaWrap.appendChild(nameSpan);
+      metaWrap.appendChild(countSpan);
+      li.appendChild(avatar);
+      li.appendChild(metaWrap);
       scoreList.appendChild(li);
     }
   }
@@ -561,4 +655,5 @@
   }
 
   connect();
+  updateAliveCount();
 })();
