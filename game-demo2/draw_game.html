@@ -1,0 +1,139 @@
+<!doctype html>
+<html class="no-js" lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>draw_game</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="theme-color" content="#111">
+  <style>
+    html, body { height:100%; margin:0; padding:0; background:#0f0f12; color:#e6e6e6; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans; }
+    .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; gap:14px; padding:16px; }
+    h1 { margin:0; font-size:20px; }
+
+    .hud { width: min(100%, 1200px); display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:flex-start; font-size:14px; }
+    .hud-group { display:flex; gap:8px; align-items:center; }
+    .tag { padding:4px 8px; border-radius:6px; background:#1d2433; border:1px solid #2a3347; }
+    .ok { color:#9ae6b4; border-color:#2e6b4f; background:#163725; }
+    .warn { color:#fbd38d; border-color:#73511d; background:#3b2a12; }
+    .err { color:#feb2b2; border-color:#7b2d2d; background:#3a1616; }
+    button, .btn { background:#1d2433; color:#e6e6e6; border:1px solid #2a3347; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:14px; }
+    button:hover, .btn:hover { filter:brightness(1.08); }
+    input[type="text"], input[type="number"] { background:#101a2b; color:#e6e6e6; border:1px solid #2a3347; padding:6px 8px; border-radius:6px; width:80px; }
+
+    .layout { width:min(100%,1200px); display:grid; grid-template-columns: minmax(360px, 640px) 320px; gap:18px; align-items:start; }
+
+    .canvas-wrap { position:relative; background:#0d1524; border:2px solid #2a3347; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); padding:12px; display:flex; flex-direction:column; gap:10px; }
+    .canvas-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .canvas-toolbar label { font-size:12px; opacity:.85; }
+    .canvas-stage { position:relative; background:#ffffff; border:1px solid #2a3347; border-radius:8px; width:100%; aspect-ratio:1/1; max-width:560px; max-height:560px; margin-inline:auto; display:flex; align-items:center; justify-content:center; }
+    canvas#drawCanvas { width:100%; height:100%; touch-action:none; cursor: crosshair; }
+
+    .info-panel { display:flex; flex-direction:column; gap:6px; padding:8px 10px; background:#101a2b; border:1px solid #2a3347; border-radius:8px; font-size:13px; }
+    .info-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+    .info-label { opacity:.9; }
+    .stars { color:#facc15; letter-spacing:2px; font-size:18px; }
+    .prompts { display:flex; flex-wrap:wrap; gap:8px; }
+    .prompt-tag { background:#1d2433; border:1px solid #2a3347; padding:4px 12px; border-radius:20px; font-size:16px; font-weight:600; }
+    /* System chat variant */
+    .chat-msg.chat-msg--system { background:#3b2a12; border-color:#73511d; }
+
+    /* Chat */
+    .chat { background:#0d1524; border:2px solid #2a3347; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 0 0 1px rgba(255,255,255,.03); display:flex; flex-direction:column; height: min(80vmin, 640px); }
+    .chat-header { padding:10px 12px; border-bottom:1px solid #2a3347; font-weight:600; background:#101a2b; }
+    .chat-body { flex:1; overflow:auto; padding:10px 12px; }
+    .chat-msg { font-size:13px; line-height:1.5; padding:6px 8px; background:#111a2a; border:1px solid #22314a; border-radius:6px; margin-bottom:8px; }
+
+    .tools-sep { width:1px; height:18px; background:#2a3347; }
+    .download-link { text-decoration:none; }
+
+    .back { margin-top:4px; text-align:center; }
+    .back a { color:#9ecbff; text-decoration:none; }
+    .back a:hover { text-decoration:underline; }
+
+    /* Win overlay */
+    .win-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: 80; }
+    .win-box { background: #0f172a; border: 1px solid #24314a; border-radius: 12px; padding: 16px 18px; width: min(90vw, 460px); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+    .win-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; text-align:center; }
+    .win-sub { opacity: .95; margin-bottom: 10px; text-align:center; }
+    .win-list { display:flex; flex-direction:column; gap:8px; max-height: 50vh; overflow:auto; }
+    .win-item { display:flex; align-items:center; gap:10px; background:#0e1527; border:1px solid #22314a; border-radius:10px; padding:8px 10px; }
+    .win-item .avatar { width: 32px; height: 32px; border-radius: 50%; background: #1b2741 center/cover no-repeat; border: 1px solid #2a3347; color:#cbd5e1; display:flex; align-items:center; justify-content:center; font-size: 12px; font-weight: 700; }
+    .win-meta { display:flex; flex-direction:column; }
+    .win-name { font-weight:600; }
+    .win-time { font-size:12px; opacity:.85; }
+    .win-actions { margin-top: 12px; display:flex; justify-content:center; gap:10px; }
+
+    @media (max-width: 1100px){
+      .layout { grid-template-columns: 1fr; }
+      .chat { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>draw_game</h1>
+
+    <div class="hud">
+      <div class="hud-group">
+        <button id="btnStart" type="button">開始</button>
+        <label>題號 <input id="inputTopicId" type="text" placeholder="1" value="1" /></label>
+        <button id="btnExtend" type="button">延長+15秒</button>
+      </div>
+      <div class="hud-group">
+        <div id="status" class="tag warn">Connecting...</div>
+        <div class="tag">Room: <strong id="roomTag">default</strong></div>
+        <div class="tag">WS: <span id="wsUrl">-</span></div>
+        <div class="tag">倒數: <span id="countdown" class="timer">--</span></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="canvas-wrap">
+        <div class="info-panel">
+          <div class="info-row">
+            <span class="info-label">難度:</span>
+            <span id="levelStars" class="stars">-</span>
+            <span class="info-label">提示:</span>
+            <div class="prompts" id="promptsBox"></div>
+          </div>
+        </div>
+        <div class="canvas-toolbar">
+          <button id="btnClear" type="button">清除</button>
+          <div class="tools-sep"></div>
+          <label>筆色 <input id="colorPicker" type="color" value="#ffff00" /></label>
+          <label>粗細 <input id="sizePicker" type="range" min="1" max="40" value="6" /></label>
+          <button id="btnEraser" type="button">橡皮擦</button>
+          <button id="btnPen" type="button">筆刷</button>
+          <div class="tools-sep"></div>
+          <button id="btnDownload" type="button">下載PNG</button>
+        </div>
+        <div class="canvas-stage">
+          <canvas id="drawCanvas"></canvas>
+        </div>
+      </div>
+
+      <aside class="chat" aria-label="聊天室">
+        <div class="chat-header">聊天室</div>
+        <div id="chatBody" class="chat-body"></div>
+      </aside>
+    </div>
+
+    <div class="back"><a href="./">← 回首頁</a></div>
+  </div>
+
+  <!-- Victory overlay for draw game -->
+  <div id="winOverlayDraw" class="win-overlay" role="dialog" aria-modal="true" aria-label="結果" style="display:none">
+    <div class="win-box">
+      <div class="win-title">結果</div>
+      <div class="win-sub">前五名（同名次者一併顯示）</div>
+      <div id="winList" class="win-list"></div>
+      <div class="win-actions">
+        <button id="btnCloseWin">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/draw_game.js"></script>
+</body>
+</html>

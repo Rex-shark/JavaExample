@@ -16,11 +16,18 @@ module.exports = merge(common, {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      {
+        // Proxy backend REST APIs for draw game
+        context: ['/game'],
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       // {
-      //   context: ['/ws','/wss', '/ws/game'],    // 新增：把 websocket 路徑代理到本機 8080
+      //   // Proxy websocket for convenience if needed
+      //   context: ['/ws', '/ws/game'],
       //   target: 'http://localhost:8080',
       //   changeOrigin: true,
-      //   ws: true,                         // 啟用 websocket 升級轉發
+      //   ws: true,
       // },
     ],
   },
