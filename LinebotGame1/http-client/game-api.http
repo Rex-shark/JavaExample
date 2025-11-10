@@ -1,3 +1,6 @@
-###依照ID 發訊息 Rex
+###取得你話我猜遊戲題目
 GET http://localhost:8080/game/draw_game?id=1
+
+###取得我是誰遊戲題目
+GET http://localhost:8080/game/who_am_i_game?id=1
 

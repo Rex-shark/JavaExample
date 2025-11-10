@@ -1,16 +1,21 @@
 package com.rex.linebotgame1.controller;
 
-import com.linecorp.bot.messaging.client.MessagingApiClient;
 import com.rex.linebotgame1.model.ApiGameResponse;
 import com.rex.linebotgame1.model.DrawGameModel;
+import com.rex.linebotgame1.model.WhoAmIGameModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/game")
 public class GameController {
+
+    private static final Logger log = LoggerFactory.getLogger(GameController.class);
 
     @GetMapping("/draw_game")
     @ResponseBody
@@ -76,4 +81,62 @@ public class GameController {
         // 回傳 HTTP 200 OK 狀態
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/who_am_i_game")
+    @ResponseBody
+    public ResponseEntity<ApiGameResponse<WhoAmIGameModel>> getWhoAmIGameTopic(@RequestParam("id") String id ) {
+
+
+        String displayName;
+        List<String> answers;
+        List<String> prompts;
+        int level;
+
+        String questionImageUrl;
+        String promptImageUrl;
+        String answerImageUrl;
+
+        switch (id) {
+            case "1":
+                displayName = "皮卡丘";
+                answers  = List.of("皮卡丘", "皮神");
+                prompts = List.of("黃色的", "電屬性", "老鼠");
+                level = 1;
+                // 由 resources/b64img 讀取，檔名依 id 組成（例如: 0_question.txt）
+                questionImageUrl = "https://lh3.google.com/u/0/d/1NfoBYs17fmkT_FFvSbTX-RPb873BV9EW=w1920-h945-iv1?auditContext=thumbnail&auditContext=prefetch";
+                promptImageUrl = "https://lh3.google.com/u/0/d/1TQeGygHIdnEaxb13UCcKjjDwW71abQE2=w1920-h877-iv1?auditContext=thumbnail&auditContext=prefetch";
+                answerImageUrl = "https://lh3.google.com/u/0/d/1c6zxkxyDk4nHiG2edCigiDjjnHbopZdW=w1920-h945-iv1?auditContext=thumbnail&auditContext=prefetch";
+                break;
+            default:
+                displayName = "皮卡丘";
+                answers  = List.of("皮卡丘", "皮神");
+                prompts = List.of("黃色的", "電屬性", "老鼠");
+                level = 1;
+                // 由 resources/b64img 讀取，檔名依 id 組成（例如: 0_question.txt）
+                questionImageUrl= "";
+                promptImageUrl ="";
+                answerImageUrl = "";
+                break;
+        }
+
+
+        // 建立測試用的遊戲資料
+        WhoAmIGameModel model = WhoAmIGameModel.builder()
+                .id(id)
+                .displayName(displayName)
+                .questionImageUrl(questionImageUrl)
+                .promptImageUrl(promptImageUrl)
+                .answerImageUrl(answerImageUrl)
+                .prompts(prompts)
+                .answers(answers)
+                .level(level)
+                .build();
+
+        ApiGameResponse<WhoAmIGameModel> response = ApiGameResponse.ok(model);
+        System.out.println("response = " + response);
+        // 回傳 HTTP 200 OK 狀態
+        return ResponseEntity.ok(response);
+    }
+
+
 }
