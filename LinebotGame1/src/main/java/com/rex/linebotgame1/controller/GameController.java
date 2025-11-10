@@ -103,9 +103,9 @@ public class GameController {
                 prompts = List.of("黃色的", "電屬性", "老鼠");
                 level = 1;
                 // 由 resources/b64img 讀取，檔名依 id 組成（例如: 0_question.txt）
-                questionImageUrl = "https://lh3.google.com/u/0/d/1NfoBYs17fmkT_FFvSbTX-RPb873BV9EW=w1920-h945-iv1?auditContext=thumbnail&auditContext=prefetch";
-                promptImageUrl = "https://lh3.google.com/u/0/d/1TQeGygHIdnEaxb13UCcKjjDwW71abQE2=w1920-h877-iv1?auditContext=thumbnail&auditContext=prefetch";
-                answerImageUrl = "https://lh3.google.com/u/0/d/1c6zxkxyDk4nHiG2edCigiDjjnHbopZdW=w1920-h945-iv1?auditContext=thumbnail&auditContext=prefetch";
+                questionImageUrl = "https://manager.line-scdn.net/hiwQH_kLANlh0MUB6FQckZFdydjoaADRxNQUwVixsLjs0ZjFwNlN4bTtaIwknQDdxIjx4XyBNND0kADheOTQhbj9WaQAacXFxUwU_RRVrYBQx/300";
+                promptImageUrl = "https://manager.line-scdn.net/hhwP-g5McN1h1VEF8FGIlZFYXdzobZXFlJ1kmQUswajs1ADldOE0hRRcoYTgfFHF1DlJwbAA_aQklEzFbJ0kmbktcKToLBzBlGkIkbi1VLw/300";
+                answerImageUrl = "https://manager.line-scdn.net/huCn-vIXOKmxLVFxOKmI4UGgXag4lZShGBlIuXx8vLw4iOWxvM1E_Wi4_Pz0YJStFHVlkax8oKAkbZSRqBlE9Wg8nNiN9bSZqM2AjcSoOfCAO/300";
                 break;
             default:
                 displayName = "皮卡丘";
