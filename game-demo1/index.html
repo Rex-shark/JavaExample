@@ -1,69 +1,106 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User 管理介面</title>
-  <link rel="stylesheet" href="./css/bootstrap.min.css">
-  <style>
-    body { background: #0f172a; color: #e2e8f0; }
-    .app-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 12px; }
-    .card { width: 100%; max-width: 900px; }
-    .small-muted { color: #94a3b8; font-size: .9rem; }
-    .hint { position: fixed; bottom: 12px; left: 12px; opacity: .9; }
-    .table thead th { border-bottom: 2px solid rgba(148,163,184,0.12); }
-    .form-inline > * { margin-right: 8px; }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User 管理介面</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <style>
+        body { background: #0f172a; color: #e2e8f0; }
+        .app-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 12px; }
+        .card { width: 100%; max-width: 900px; }
+        .small-muted { color: #94a3b8; font-size: .9rem; }
+        .hint { position: fixed; bottom: 12px; left: 12px; opacity: .9; }
+        .table thead th { border-bottom: 2px solid rgba(148,163,184,0.12); }
+        .form-inline > * { margin-right: 8px; }
+    </style>
 </head>
 <body>
-  <div class="app-wrap container">
+<div class="app-wrap container">
     <div class="card p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="m-0">User 管理 (CRUD)</h3>
-        <div class="small-muted">呼叫後端 API: <code id="apiBase">http://localhost:8080/users</code></div>
-      </div>
-
-      <div id="notify" class="mb-3"></div>
-
-      <form id="userForm" class="mb-3">
-        <input type="hidden" id="editingUuid" />
-        <div class="row g-2">
-          <div class="col-sm-4">
-            <input id="account" class="form-control" placeholder="account (6~100)" required minlength="6" />
-          </div>
-          <div class="col-sm-3">
-            <input id="password" class="form-control" placeholder="password" />
-          </div>
-          <div class="col-sm-3">
-            <input id="remark" class="form-control" placeholder="remark (optional)" />
-          </div>
-          <div class="col-sm-2 d-flex">
-            <button id="submitBtn" class="btn btn-primary me-2" type="submit">建立</button>
-            <button id="cancelBtn" class="btn btn-secondary" type="button" style="display:none">取消</button>
-          </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0">User 管理 (CRUD)</h3>
+            <div class="small-muted">呼叫後端 API: <code id="apiBase">http://localhost:8080/users</code></div>
         </div>
-      </form>
 
-      <div class="table-responsive">
-        <table class="table table-dark table-striped align-middle mb-0">
-          <thead>
-            <tr>
-              <th>UUID</th>
-              <th>Account</th>
-              <th>Remark</th>
-              <th style="width:170px">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="usersTbody">
-            <!-- rows injected by JS -->
-          </tbody>
-        </table>
-      </div>
+        <div id="notify" class="mb-3"></div>
 
-      <div class="mt-3 small-muted">提示：create 需要傳送 password 與 createdUserId（前端預設 createdUserId=1）。若有 CORS 問題請確認後端允許來自此網域的請求。</div>
+        <form id="userForm" class="mb-3">
+            <input type="hidden" id="editingUuid" />
+            <div class="row g-2">
+                <div class="col-sm-4">
+                    <input id="account" class="form-control" placeholder="account (6~100)" required minlength="6" />
+                </div>
+                <div class="col-sm-3">
+                    <input id="password" class="form-control" placeholder="password" />
+                </div>
+                <div class="col-sm-3">
+                    <input id="remark" class="form-control" placeholder="remark (optional)" />
+                </div>
+                <div class="col-sm-2 d-flex">
+                    <button id="submitBtn" class="btn btn-primary me-2" type="submit">建立</button>
+                    <button id="cancelBtn" class="btn btn-secondary" type="button" style="display:none">取消</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-striped align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>UUID</th>
+                    <th>Account</th>
+                    <th>Remark</th>
+                    <th style="width:170px">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="usersTbody">
+                <!-- rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3 small-muted">提示：create 需要傳送 password 與 createdUserId（前端預設 createdUserId=1）。若有 CORS 問題請確認後端允許來自此網域的請求。</div>
+
+        <!-- 🎵 背景音樂區塊（YouTube Player API） -->
+        <div id="player" style="width:500px;height:500px;overflow:;"></div>
     </div>
-  </div>
+</div>
 
-  <script src="./js/game.js"></script>
+<script src="./js/game.js"></script>
+
+<!-- 🎬 載入 YouTube Player API -->
+<script>
+    // 動態載入 YouTube IFrame Player API
+    let tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    let player;
+
+    // YouTube API 會呼叫這個函式來建立播放器
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            videoId: 'Bbp9ZaJD_eA', // 周杰倫 七里香
+            playerVars: {
+                autoplay: 1,
+                start: 47,     // 從第47秒開始播放
+                loop: 1,       // 重複播放
+                playlist: 'Bbp9ZaJD_eA', // loop 必須加這個
+                controls: 0,   // 不顯示控制列
+                modestbranding: 1,
+                rel: 0,
+                mute: 0        // 若想自動播放成功，可先設為靜音 1
+            },
+            events: {
+                onReady: (event) => {
+                    // 先靜音播放，再調整音量避免被瀏覽器擋
+                    event.target.setVolume(50);
+                    event.target.playVideo();
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
