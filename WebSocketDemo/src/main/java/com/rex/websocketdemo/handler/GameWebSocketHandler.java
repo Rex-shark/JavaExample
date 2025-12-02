@@ -36,6 +36,11 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String roomId = sessionRoom.getOrDefault(session.getId(), "default");
         String payload = message.getPayload();
+
+        // === 這裡印出收到的指令 ===
+        System.out.println("收到指令 from session " + session.getId() + ": " + payload);
+
+
         String out = "{\"type\":\"message\",\"from\":\"" + session.getId() + "\",\"room\":\"" + escape(roomId) + "\",\"data\":" + escapeJson(payload) + "}";
         broadcastToRoomExceptSender(roomId, session, out);
         session.sendMessage(new TextMessage("{\"type\":\"ack\"}"));

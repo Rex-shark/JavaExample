@@ -15,6 +15,9 @@
 - UTC+8時區版本 +  network 版本(docker-network)
   - docker network create docker-network
   - docker run -itd --name mysql8-UTC8-c --network docker-network -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Taipei -p 3306:3306 -v /d/dockerMySqlData:/var/lib/mysql mysql:8.0
+- UTC+8時區版本 +  network 版本(mysql-network)
+    - docker network create mysql-network
+    - docker run -itd --name mysql8-UTC8-c --network mysql-network -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Taipei -p 3306:3306 -v /d/dockerMySqlData:/var/lib/mysql mysql:8.0
 
 ### mysql 啟動docker容器指令 持久化路徑放在~/mydata 適用Mac
 
