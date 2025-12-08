@@ -1,0 +1,76 @@
+### 1. 登入取得 Token
+POST http://localhost:8080/api/jwt/login
+Content-Type: application/json
+
+{
+  "username": "rex",
+  "password": "123456"
+}
+
+### 2. 登入取得 Token (另一個使用者)
+POST http://localhost:8080/api/jwt/login
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "password": "password123"
+}
+
+### 3. 驗證 Token (請先執行步驟1，然後複製 token 到下面)
+POST http://localhost:8080/api/jwt/validate
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmV4QGV4YW1wbGUuY29tIiwic3ViIjoicmV4IiwiaWF0IjoxNzMzMTQ2ODAwLCJleHAiOjE3MzMxNTA0MDB9.xxx
+
+### 4. 解析 Token 內容
+GET http://localhost:8080/api/jwt/parse
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmV4QGV4YW1wbGUuY29tIiwic3ViIjoicmV4IiwiaWF0IjoxNzY0NjQwOTkyLCJleHAiOjE3NjQ2NDQ1OTJ9.F1d08aYGFkCaQL_97OYaeFvSf74euAir7Z-usjqNywd7SqG9Ybx38bYm5OEQNX1P
+
+### 5. 刷新 Token
+POST http://localhost:8080/api/jwt/refresh
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmV4QGV4YW1wbGUuY29tIiwic3ViIjoicmV4IiwiaWF0IjoxNzMzMTQ2ODAwLCJleHAiOjE3MzMxNTA0MDB9.xxx
+
+### 6. 測試無效的 Token
+POST http://localhost:8080/api/jwt/validate
+Authorization: Bearer invalid_token_here
+
+### 7. 測試缺少 Authorization Header
+POST http://localhost:8080/api/jwt/validate
+
+### ===== 以下是展示如何提取 claims 的測試範例 =====
+
+### 8. 登入取得 Token - 查看回應中的 token 包含哪些資訊
+# 登入後會生成包含 role="USER" 和 email="rex@example.com" 的 Token
+POST http://localhost:8080/api/jwt/login
+Content-Type: application/json
+
+{
+  "username": "rex",
+  "password": "123456"
+}
+
+### 9. 解析 Token 查看所有 Claims
+# 回應會包含：username, role, email, expired, expirationDate, allClaims
+# 從 allClaims 中可以看到 Token 裡存放的所有資訊
+GET http://localhost:8080/api/jwt/parse
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsImVtYWlsIjoicmV4QGV4YW1wbGUuY29tIiwic3ViIjoicmV4IiwiaWF0IjoxNzY0NjQxNjEzLCJleHAiOjE3NjQ2NDUyMTN9.OzwIvTBKQd_TPws0oSzTsXFqo3qVIkC5EXcnsHubYHRKqlwrRWQxwMgynvrV6Wbh
+
+### 10. 使用說明
+# 步驟 1: 先執行步驟 8 (登入)
+# 步驟 2: 複製回應中的 "token" 值
+# 步驟 3: 將 token 貼到步驟 9 的 Authorization Bearer 後面
+# 步驟 4: 執行步驟 9，就可以看到 Token 中的所有資訊了！
+#
+# 你會在回應中看到：
+# {
+#   "username": "rex",
+#   "role": "USER",              ← 這是從 claims.put("role", "USER") 來的
+#   "email": "rex@example.com",  ← 這是從 claims.put("email", ...) 來的
+#   "expired": false,
+#   "expirationDate": "...",
+#   "allClaims": {
+#     "role": "USER",
+#     "email": "rex@example.com",
+#     "sub": "rex",
+#     "iat": 1733146800,
+#     "exp": 1733150400
+#   }
+# }
