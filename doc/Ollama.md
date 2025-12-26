@@ -1,0 +1,14 @@
+###   本地語言模型
+
+1. 官網下載鏡像
+2. 啟動容器 (CPU 模式)
+    ``` PowerShell
+    docker run -d -v D:\docker\AI_Models:/root/.ollama -p 11434:11434 --name ollama-c ollama/ollama
+    ```
+3. 下載並執行模型
+    ```PowerShell
+    # 指定的模型 -> gemma3:12b (這個要docker記憶體9G以上)
+    docker exec -it ollama-c ollama run gemma3:12b
+    # 指定的模型 -> gemma3:
+    docker exec -it ollama-c ollama run gemma3
+    ```

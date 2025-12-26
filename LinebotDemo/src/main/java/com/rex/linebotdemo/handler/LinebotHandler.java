@@ -2,6 +2,7 @@ package com.rex.linebotdemo.handler;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.linecorp.bot.client.base.Result;
 import com.linecorp.bot.messaging.client.MessagingApiClient;
 import com.linecorp.bot.messaging.model.*;
@@ -10,6 +11,8 @@ import com.linecorp.bot.spring.boot.handler.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.handler.annotation.LineMessageHandler;
 import com.linecorp.bot.webhook.model.*;
 
+import com.rex.linebotdemo.service.GeminiChatService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -33,32 +36,28 @@ public class LinebotHandler {
     @Value("${line.bot.channel-token}")
     private String channelToken;
 
+    @Resource
+    GeminiChatService geminiChatService;
+
     @EventMapping
-    public Message handleTextMessageEvent(MessageEvent event) {
+    public Message handleTextMessageEvent(MessageEvent event) throws JsonProcessingException {
 
         System.out.println("handleTextMessageEvent");
         System.out.println("event = " + event);
-
-
+        MessageContent content = event.message();
+        String userText = "";
 
         String userId = null;
         Source source = event.source();
         AtomicReference<String> originalMessageText = new AtomicReference<>();
 
+
         if (source instanceof GroupSource groupSource) {
             System.out.println("🐾 這是群組訊息喵！");
             System.out.println("群組 ID：" + groupSource.groupId());
-            MessageContent content = event.message();
-
-//            LineMessagingClient client = LineMessagingClient.builder("YOUR_CHANNEL_ACCESS_TOKEN")
-//                    .build();
-
-           // System.out.println("🐾 使用者名稱：" + userName);
 
             if (content instanceof TextMessageContent textMessage) {
                 System.out.println("🗨️ 使用者傳的文字：" + textMessage.text());
-                //找出使用者id
-
 
             } else if (content instanceof ImageMessageContent imageMessage) {
                 System.out.println("🖼️ 使用者傳了一張圖片喵！");
@@ -76,6 +75,10 @@ public class LinebotHandler {
         } else if (source instanceof UserSource userSource) {
             System.out.println("🐾 這是個人訊息喵！");
             System.out.println("使用者 ID：" + userSource.userId());
+            if (content instanceof TextMessageContent textMessage) {
+                System.out.println("🗨️ 使用者傳的文字：" + textMessage.text());
+                userText = textMessage.text();
+            }
         } else {
             System.out.println("😿 無法辨識來源類型喵！");
         }
@@ -83,46 +86,58 @@ public class LinebotHandler {
         userId = source.userId();
         System.out.println("userId = " + userId);
 
-        MessagingApiClient client = MessagingApiClient.builder(channelToken)
-                .apiEndPoint(URI.create("https://api.line.me/")) // 可省略，預設就是這個
-                .build();
+//        MessagingApiClient client = MessagingApiClient.builder(channelToken)
+//                .apiEndPoint(URI.create("https://api.line.me/")) // 可省略，預設就是這個
+//                .build();
 
 
+//        // 呼叫 getProfile 取得使用者資料
+//        client.getProfile(userId)
+//                .whenComplete((profile, throwable) -> {
+//                    if (throwable != null) {
+//                        System.err.println("取得使用者資料時發生錯誤：" + throwable.getMessage());
+//                        return;
+//                    }
+//
+//                    if (profile != null) {
+//                        UserProfileResponse userProfile = profile.body();
+//                        originalMessageText.set(userProfile.displayName());
+//
+//                        System.out.println("profile = " + profile);
+//                        System.out.println("✅ 使用者名稱：" + userProfile.displayName());
+//                        System.out.println("🆔 User ID：" + userProfile.userId());
+//                        System.out.println("🖼️ 大頭貼連結：" + userProfile.pictureUrl());
+//                        System.out.println("✏️ 狀態訊息：" + userProfile.statusMessage());
+//                    } else {
+//                        System.out.println("查無使用者資料喵～");
+//                    }
+//                })
+//                .join(); // 等待執行完成
 
-        // 呼叫 getProfile 取得使用者資料
-        client.getProfile(userId)
-                .whenComplete((profile, throwable) -> {
-                    if (throwable != null) {
-                        System.err.println("取得使用者資料時發生錯誤：" + throwable.getMessage());
-                        return;
-                    }
+//        if (originalMessageText.get() == null || originalMessageText.get().isEmpty()) {
+//            return this.getRandomResponse(); // 如果沒有回應內容，則不發送任何消息
+//        }
 
-                    if (profile != null) {
-                        UserProfileResponse userProfile = profile.body();
-                        originalMessageText.set(userProfile.displayName());
-
-                        System.out.println("profile = " + profile);
-                        System.out.println("✅ 使用者名稱：" + userProfile.displayName());
-                        System.out.println("🆔 User ID：" + userProfile.userId());
-                        System.out.println("🖼️ 大頭貼連結：" + userProfile.pictureUrl());
-                        System.out.println("✏️ 狀態訊息：" + userProfile.statusMessage());
-                    } else {
-                        System.out.println("查無使用者資料喵～");
-                    }
-                })
-                .join(); // 等待執行完成
-
-
-
-        if (originalMessageText.get() == null || originalMessageText.get().isEmpty()) {
-            return this.getRandomResponse(); // 如果沒有回應內容，則不發送任何消息
+        //AI
+        if(userText.isEmpty()){
+            //隨機亂回
+            return this.getRandomResponse();
+        }
+        System.out.println( "AI 模組整合區域");
+        System.out.println("userText= " + userText);
+        //userText 開頭是/ai 則進入AI回覆
+        if (userText.toLowerCase(java.util.Locale.ROOT).startsWith("/ai")) {
+            userText = userText.substring(3).trim(); // 移除開頭的 /AI 並去除多餘空白
+            String aiResponse = geminiChatService.chat(userText );
+            return new TextMessage(aiResponse);
         }
 
 
+        //隨機亂回
+        return this.getRandomResponse();
 
 
 
-        return new TextMessage(originalMessageText.get());
         //新模組 單人
         //event = MessageEvent[source=UserSource[userId=U4572b96a8d20e5523f085c51e2205507]
         // , timestamp=1751795411970, mode=ACTIVE, webhookEventId=01JZFJ9BFXFP385FQBFWQV26FY

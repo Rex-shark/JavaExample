@@ -25,6 +25,30 @@
 
 ---
 
+### PostgreSQL 建立鏡像，不啟動容器
+- docker pull mysql:8.0
+
+### PostgreSQL啟動docker容器指令 持久化路徑放在D槽的版本 適用windows
+
+- 先建立網路
+  - docker network create postgres-network 
+- 啟動容器 
+  - docker run -itd --name postgres16-UTC8-c --network postgres-network -e POSTGRES_DB=rag_dev -e POSTGRES_USER=root -e POSTGRES_PASSWORD=123456 -e TZ=Asia/Taipei -p 5432:5432 -v /d/dockerPostgresData:/var/lib/postgresql/data postgres:16
+- 安裝 vector 控制檔
+  1. 進入容器 : docker exec -it postgres16-UTC8-c bash
+  2. 安裝 pgvector extension
+     - apt update
+     - apt install -y postgresql-16-pgvector
+  3. 在資料庫啟用 pgvector
+     - psql -U root -d rag_dev
+     - CREATE EXTENSION vector;
+     - \q
+  4. 離開容器 : exit
+
+
+
+
+
 ### 查docker內MySQL或redis的ip
 
 1. 先用 docker ps 查出容器名稱與Id

@@ -7,8 +7,8 @@ Content-Type: application/json
 
 {
     "userId": "{{lineBotUserIdRex}}",
-    "text": "up",
-    "type": "join",
+    "text": "皮神",
+    "type": "guess",
     "roomId": "default",
     "groupId": "groupId"
 }
@@ -19,8 +19,8 @@ Content-Type: application/json
 
 {
     "userId": "{{lineBotUserIdYuWei}}",
-    "text": "left",
-    "type": "join",
+    "text": "皮神",
+    "type": "guess",
     "roomId": "default",
     "groupId": "groupId"
 }
@@ -31,8 +31,8 @@ Content-Type: application/json
 
 {
     "userId": "{{lineBotUserIdT450}}",
-    "text": "right",
-    "type": "join",
+    "text": "皮卡丘",
+    "type": "guess",
     "roomId": "default",
     "groupId": "groupId"
 }
