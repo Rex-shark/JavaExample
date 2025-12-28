@@ -3,3 +3,10 @@ PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdRex}}
 
 ###依照ID 發訊息 Tina
 PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdTina}}
+
+###依照ID 發訊息 Tina
+PUT http://localhost:8080/test/sendMessage/{{lineBotUserIdTina}}
+
+###AI 測試
+GET http://localhost:8080/test/ai-test?
+    userText=遊戲資訊有什麼呢?

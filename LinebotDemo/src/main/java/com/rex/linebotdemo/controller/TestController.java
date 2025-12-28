@@ -1,11 +1,14 @@
 package com.rex.linebotdemo.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.linecorp.bot.client.base.Result;
 import com.linecorp.bot.messaging.client.MessagingApiClient;
 import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.PushMessageRequest;
 import com.linecorp.bot.messaging.model.PushMessageResponse;
 import com.linecorp.bot.messaging.model.TextMessage;
+import com.rex.linebotdemo.service.GeminiChatService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,9 @@ public class TestController {
 
     @Value("${line.bot.channel-token}")
     private String channelToken;
+
+    @Resource
+    GeminiChatService geminiChatService;
 
     @PutMapping("/sendMessage/{id}")
     @ResponseBody
@@ -76,6 +82,19 @@ public class TestController {
 
         //--
         return ResponseEntity.ok("findUserId successfully");
+    }
+
+    @GetMapping("/ai-test")
+    @ResponseBody
+    public ResponseEntity<String> aiTest(@RequestParam("userText") String userText) {
+        String aiResponse = "";
+        try {
+             aiResponse = geminiChatService.chat(userText );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        //--
+        return ResponseEntity.ok(aiResponse);
     }
 
 }

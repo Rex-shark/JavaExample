@@ -1,0 +1,19 @@
+###hello word
+GET http://localhost:8080/hello
+
+###hello word
+POST http://localhost:8080/api/genai/chat
+Content-Type: application/json
+
+{"prompt":"你好"}
+
+
+###hello word
+POST http://localhost:8080/api/genai/chat2
+Content-Type: application/json
+
+{
+  "prompt":"尾牙餐廳在哪裡，還有日期?",
+  "system":""
+}
+

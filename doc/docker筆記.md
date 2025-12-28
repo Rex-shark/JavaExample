@@ -67,6 +67,11 @@
 
 ---
 
+### 建立Redis Stack鏡像與容器
+
+* 直接加入 mysql-network
+1. docker run --name redis-stack-c  --network mysql-network -d -p 6379:6379 redis/redis-stack-server
+
 ### 建立RabbitMQ鏡像與容器
 
 1. docker pull rabbitmq:3.12-management
