@@ -13,7 +13,7 @@ POST http://localhost:8080/api/genai/chat2
 Content-Type: application/json
 
 {
-  "prompt":"尾牙餐廳在哪裡，還有日期?",
+  "prompt":"你是誰",
   "system":""
 }
 
