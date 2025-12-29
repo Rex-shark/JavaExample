@@ -1,6 +1,7 @@
 ###hello word
 GET http://localhost:8080/hello
 
+
 ###hello word
 POST http://localhost:8080/api/genai/chat
 Content-Type: application/json
@@ -17,3 +18,27 @@ Content-Type: application/json
   "system":""
 }
 
+###"gemma3:27b
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "gemma3:27b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "你好"
+    }
+  ]
+}
+
+###"gemma3
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "gemma3:12b",
+  "system": "你是一個精通中文的助手，請用繁體中文回答所有問題。",
+  "prompt": "gemma3是什麼",
+  "stream": false
+}
