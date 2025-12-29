@@ -7,7 +7,9 @@ import com.linecorp.bot.messaging.model.Message;
 import com.linecorp.bot.messaging.model.PushMessageRequest;
 import com.linecorp.bot.messaging.model.PushMessageResponse;
 import com.linecorp.bot.messaging.model.TextMessage;
+import com.rex.linebotdemo.response.OllamaChatResponse;
 import com.rex.linebotdemo.service.GeminiChatService;
+import com.rex.linebotdemo.service.Gemma3Service;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,9 @@ public class TestController {
 
     @Resource
     GeminiChatService geminiChatService;
+
+    @Resource
+    Gemma3Service gemma3Service;
 
     @PutMapping("/sendMessage/{id}")
     @ResponseBody
@@ -89,7 +94,9 @@ public class TestController {
     public ResponseEntity<String> aiTest(@RequestParam("userText") String userText) {
         String aiResponse = "";
         try {
-             aiResponse = geminiChatService.chat(userText );
+             //aiResponse = geminiChatService.chat(userText );
+
+            aiResponse = gemma3Service.chat(userText );
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
