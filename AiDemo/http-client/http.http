@@ -14,8 +14,17 @@ POST http://localhost:8080/api/genai/chat2
 Content-Type: application/json
 
 {
-  "prompt":"你是誰",
-  "system":""
+  "prompt":"今天星期幾",
+  "system":"Rex"
+}
+
+###hello word
+POST http://localhost:8080/api/genai/chat2
+Content-Type: application/json
+
+{
+  "prompt":"TIST電話呢?你還記得我剛剛說我是誰嗎",
+  "system":"Tom"
 }
 
 ###"gemma3:27b
