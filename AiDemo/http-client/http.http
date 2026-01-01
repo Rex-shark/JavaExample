@@ -27,21 +27,33 @@ Content-Type: application/json
   "system":"Tom"
 }
 
-###"gemma3:27b
+###"gemma3:27b  對話模式 (Chat) 可以包含對話歷史。
 POST http://localhost:11434/api/chat
 Content-Type: application/json
 
 {
   "model": "gemma3:27b",
   "messages": [
-    {
-      "role": "user",
-      "content": "你好"
-    }
-  ]
+    { "role": "system", "content": "你是一個精通中文的助手，請用繁體中文回答所有問題。" },
+    { "role": "user", "content": "你好" }
+  ],
+  "stream": false
 }
 
-###"gemma3
+###"gemma3:12b  對話模式 (Chat) 可以包含對話歷史。
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "gemma3:12b",
+  "messages": [
+    { "role": "system", "content": "你是一個精通中文的助手，請用繁體中文回答所有問題。" },
+    { "role": "user", "content": "你好" }
+  ],
+  "stream": false
+}
+
+###"gemma3:12b單次生成模式 (Generate)。這通常用於「補全文字」或不需上下文的單次指令。
 POST http://localhost:11434/api/generate
 Content-Type: application/json
 
@@ -49,5 +61,29 @@ Content-Type: application/json
   "model": "gemma3:12b",
   "system": "你是一個精通中文的助手，請用繁體中文回答所有問題。",
   "prompt": "gemma3是什麼",
+  "stream": false
+}
+
+
+###"gemma3:4b 單次生成模式 (Generate)。這通常用於「補全文字」或不需上下文的單次指令。
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "gemma3:4b",
+  "system": "你是一個精通中文的助手，請用繁體中文回答所有問題。",
+  "prompt": "你好",
+  "stream": false
+}
+
+
+###"gemma3:1b 單次生成模式 (Generate)。這通常用於「補全文字」或不需上下文的單次指令。
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "gemma3:1b",
+  "system": "你是一個精通中文的助手，請用繁體中文、台灣用語回答所有問題。",
+  "prompt": "你好",
   "stream": false
 }
