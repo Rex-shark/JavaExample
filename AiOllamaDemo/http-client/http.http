@@ -1,0 +1,19 @@
+###ollama
+POST http://localhost:8080/api/ollama/chat
+Content-Type: application/json
+
+{
+  "prompt": "現在時間是幾點"
+}
+
+
+###gemma3 (4b 版本)
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "gemma3:latest",
+  "system": "請用繁體中文回答所有問題。",
+  "prompt": "你好",
+  "stream": false
+}
