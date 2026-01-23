@@ -9,7 +9,7 @@
     # GPU (NVIDIA)
     docker run -d --gpus all -v D:\docker\AI_Models:/root/.ollama -p 11434:11434 --name ollama-c ollama/ollama
     ```
-3. 下載並執行模型
+4. 下載並執行模型
     ```PowerShell
     # 指定的模型 -> mgema3:12b (這個要docker記憶體9G以上)
     docker exec -it ollama-c ollama run gemma3:12b
@@ -17,4 +17,5 @@
     docker exec -it ollama-c ollama run gemma3
     # 指定的模型 -> gemma3:27b: (4070跑不了)
     docker exec -it ollama-c ollama run gemma3:27b
+   # docker exec -it ollama-c ollama run  embeddinggemma:300m
     ```

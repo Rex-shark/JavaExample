@@ -3,6 +3,6 @@ POST http://localhost:8080/api/openai/chat
 Content-Type: application/json
 
 {
-  "prompt": "現在時間是幾點"
+  "prompt": "自我介紹"
 }
 
