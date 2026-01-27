@@ -57,4 +57,6 @@ public class GenAiChatController {
 
         return ResponseEntity.ok(new ChatResponse(reply));
     }
+
+   
 }

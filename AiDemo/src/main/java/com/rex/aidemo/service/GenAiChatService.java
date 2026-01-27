@@ -38,4 +38,6 @@ public class GenAiChatService implements AiChatService {
                 .content();
     }
 
+
+
 }

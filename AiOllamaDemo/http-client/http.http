@@ -17,3 +17,22 @@ Content-Type: application/json
   "prompt": "你好",
   "stream": false
 }
+
+###gemma3 (4b 版本)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "gemma3:latest",
+  "messages": [
+    {
+      "role": "system",
+      "content": "請用繁體中文回答所有問題。"
+    },
+    {
+      "role": "user",
+      "content": "你好"
+    }
+  ],
+  "stream": false
+}
