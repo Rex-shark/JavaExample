@@ -1,0 +1,18 @@
+### 權杖測試
+GET https://graph.threads.net/me?fields=id,username,threads_profile_picture_url&access_token={{access_token}}
+
+
+
+### 發文，取得 creation_id
+POST http://localhost:8080/api/threads/container
+Content-Type: application/json
+
+{
+  "text": "我發文啦!!",
+  "aiModel": "AI",
+  "title": "測試"
+}
+
+### 根據SQL id 發布文章
+POST http://localhost:8080/api/threads/publish/4
+Content-Type: application/x-www-form-urlencoded
