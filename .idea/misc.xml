@@ -14,10 +14,15 @@
         <option value="$PROJECT_DIR$/LinebotGame1/pom.xml" />
         <option value="$PROJECT_DIR$/SprinSecurityDemo/pom.xml" />
         <option value="$PROJECT_DIR$/MyTools/pom.xml" />
+        <option value="$PROJECT_DIR$/AiDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/AiOpenAiDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/SpecDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/McpDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/McpServerDemo/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="corretto-17" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="corretto-21 (2)" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>
