@@ -1,0 +1,5 @@
+# Web Meta Threads 設定檔
+
+spring:
+  profiles:
+    active: dev

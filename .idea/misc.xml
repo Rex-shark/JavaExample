@@ -19,10 +19,20 @@
         <option value="$PROJECT_DIR$/SpecDemo/pom.xml" />
         <option value="$PROJECT_DIR$/McpDemo/pom.xml" />
         <option value="$PROJECT_DIR$/McpServerDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/JwtDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/AiDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/AiOpenAiDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/AiOllamaDeom/pom.xml" />
+        <option value="$PROJECT_DIR$/AiOllamaDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/TestDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/SpecDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/WebCrawlerDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/WebMetaThreads/pom.xml" />
       </list>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="corretto-21 (2)" project-jdk-type="JavaSDK">
+
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/AiDemo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/AiOllamaDemo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/AiOpenAiDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/DockerDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/JpaMySql/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/JwtDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/LinebotDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/LinebotGame1/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/MyTools/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/RedisDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/RestfulApi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpecDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SprinSecurityDemo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/TestDemo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/WebCrawlerDemo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/WebMetaThreads/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/WebSocketDemo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />

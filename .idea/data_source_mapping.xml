@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ece4a927-668e-4127-9dd0-913f1992377f/console_1.sql" value="ece4a927-668e-4127-9dd0-913f1992377f" />
     <file url="file://$PROJECT_DIR$/DockerDemo/sql-console/console.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
     <file url="file://$PROJECT_DIR$/JpaMySql/sql-console/console.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
     <file url="file://$PROJECT_DIR$/LinebotGame1/sql-console/console.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
     <file url="file://$PROJECT_DIR$/LinebotGame1/sql-console/tist-user-insert.sql" value="e1c35334-7c35-4258-a907-09f565f90cfd" />
+    <file url="file://$PROJECT_DIR$/WebCrawlerDemo/z-sql/console.sql" value="ddf38c14-e1b8-4ea4-8d06-3ccbc213dbf2" />
   </component>
 </project>
