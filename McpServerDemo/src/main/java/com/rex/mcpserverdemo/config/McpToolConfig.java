@@ -2,6 +2,7 @@ package com.rex.mcpserverdemo.config;
 
 import com.rex.mcpserverdemo.service.CalculatorService;
 import com.rex.mcpserverdemo.service.GreetingService;
+import com.rex.mcpserverdemo.service.SkillReaderService;
 import com.rex.mcpserverdemo.service.UserService;
 import com.rex.mcpserverdemo.service.WeatherService;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -41,6 +42,13 @@ public class McpToolConfig {
     public ToolCallbackProvider userTools(UserService userService) {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(userService)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider skillReaderTools(SkillReaderService skillReaderService) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(skillReaderService)
                 .build();
     }
 }
