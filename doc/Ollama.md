@@ -17,5 +17,7 @@
     docker exec -it ollama-c ollama run gemma3
     # 指定的模型 -> gemma3:27b: (4070跑不了)
     docker exec -it ollama-c ollama run gemma3:27b
-   # docker exec -it ollama-c ollama run  embeddinggemma:300m
+    docker exec -it ollama-c ollama pull hf.co/mradermacher/gemma-4-E2B-it-heretic-GGUF
+    docker exec -it ollama-c ollama pull hf.comradermacher/gemma-4-E4B-it-ultra-uncensored-heretic-i1-GGUF
+    docker exec -it ollama-c ollama run  embeddinggemma:300m
     ```
